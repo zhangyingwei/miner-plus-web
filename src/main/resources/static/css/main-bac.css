@@ -1,0 +1,112 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #ECEADB;
+}
+.miner-main-container {
+    width: 1000px;
+    height: 100%;
+    margin: 0 auto;
+}
+
+.miner-main-container .header {
+    min-height: 100px;
+}
+.miner-main-container .header h1 {
+    font-size: 25px;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    line-height: 100px;
+}
+.miner-main-container .foot {
+    min-height: 100px;
+}
+.miner-main-container .content{
+    background-color: #f8f8f8;
+    width: 100%;
+    height: 600px;
+    border: 1px solid #cccccc;
+    border-top: 4px solid #df3434;
+    border-radius: 0px 0px 10px 10px;
+    box-shadow: 0px 0px 0px 0px #cccccc;
+}
+.miner-main-container .content .son {
+    height: 100%;
+    float: left;
+}
+.miner-main-container .content .left{
+    width: 40%;
+}
+.miner-main-container .content .son .title {
+    padding: 20px;
+}
+.miner-main-container .content .son .content {
+    border: 0;
+    padding: 10px;
+    margin: 0;
+    height: auto;
+    width: auto;
+}
+.miner-main-container h2 {
+    font-size: 18px;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+.miner-main-container .content .left .list ul{
+    list-style: none;
+}
+.miner-main-container .content .left .list {
+
+}
+.miner-main-container .content .left .list .li-meta {
+    border-bottom: 1px dashed #e3ecec;
+    padding: 10px 0;
+}
+.miner-main-container .content .left .list .li-meta .title {
+    padding: 0;
+    margin: 0;
+    font-size: 15px;
+    padding-bottom: 10px;
+}
+.miner-main-container .content .left .list .li-meta .title a{
+    text-decoration: none;
+    color: #5C5C5C;
+}
+.miner-main-container .content .left .list .li-meta .meta {
+    font-size: 10px;
+    color: #cccccc;
+}
+.miner-main-container .content .left .list .li-meta .meta span{
+    margin-right: 20px;
+}
+.miner-main-container .content .right{
+    width: 60%;
+}
+.miner-main-container .content .right .sub {
+    width: 90%;
+    padding: 10px;
+    margin: 0;
+}
+.miner-main-container .content .right .sub .h-title {
+    font-size: 15px;
+    min-width: 100px;
+    display: inline-block;
+}
+.miner-main-container .content .right .input {
+    margin: 0;
+    padding: 0;
+    height: 30px;
+    width: 300px;
+}
+.miner-main-container .content .right .button{
+    margin: 0;
+    padding: 0;
+    height: 33px;
+    width: 60px;
+}
+red {
+    color: #df3434;
+    margin: 0 2px;
+}

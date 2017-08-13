@@ -1,0 +1,408 @@
+    <div id="article_details" class="details">
+        <div class="article_title">
+            <span class="ico ico_type_Original"></span>
+
+            <h1>
+        <span class="link_title">
+        activiti 动态配置 activiti 监听引擎启动和初始化（高级源码篇）
+        </span>
+
+            </h1>
+        </div>
+
+        <div class="article_manage clearfix">
+            <div class="article_l">
+            <span class="link_categories">
+            标签：
+              <a href="http://www.csdn.net/tag/%e6%ba%90%e7%a0%81" target="_blank" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_tag']);">源码</a>
+            </span>
+            </div>
+            <div class="article_r">
+                <span class="link_postdate">2016-04-16 20:42</span>
+                <span class="link_view" title="阅读次数">3248人阅读</span>
+                <span class="link_comments" title="评论次数"> <a href="#comments" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_pinglun'])">评论</a>(14)</span>
+                <span class="link_collect tracking-ad" data-mod="popu_171"> <a href="javascript:void(0);" onclick="javascript:collectArticle('activiti+%e5%8a%a8%e6%80%81%e9%85%8d%e7%bd%ae+activiti+%e7%9b%91%e5%90%ac%e5%bc%95%e6%93%8e%e5%90%af%e5%8a%a8%e5%92%8c%e5%88%9d%e5%a7%8b%e5%8c%96%ef%bc%88%e9%ab%98%e7%ba%a7%e6%ba%90%e7%a0%81%e7%af%87%ef%bc%89','51170011');return false;" title="收藏" target="_blank">收藏</a></span>
+                <span class="link_report"> <a href="#report" onclick="javascript:report(51170011,2);return false;" title="举报">举报</a></span>
+
+            </div>
+        </div>
+        <div class="category clearfix">
+            <div class="category_l">
+                <span>分类：</span>
+            </div>
+            <div class="category_r">
+                <label onclick="GetCategoryArticles('6186260','qq_30739519','top','51170011');">
+                    <span onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_fenlei']);">activiti工作流<em>（29）</em></span>
+                    <div class="subItem">
+                        <div class="subItem_t"><a href="http://blog.csdn.net/qq_30739519/article/category/6186260" target="_blank">作者同类文章</a><i class="J_close">X</i></div>
+                        <ul class="subItem_l" id="top_6186260">
+                        </ul>
+                    </div>
+                </label>
+            </div>
+        </div>
+        <div class="bog_copyright">
+            <p class="copyright_p">版权声明：本文为博主原创文章，未经博主允许不得转载。不经过允许copy,讲追究法律责任，欢迎加入我们的学习提升群523988350，可以相互交流</p>
+        </div>
+
+
+
+
+
+
+
+
+        <div style="clear:both"></div><div style="border:solid 1px #ccc; background:#eee; float:left; min-width:200px;padding:4px 10px;"><p style="text-align:right;margin:0;"><span style="float:left;">目录<a href="#" title="系统根据文章中H1到H6标签自动生成文章目录">(?)</a></span><a href="#" onclick="javascript:return openct(this);" title="展开">[+]</a></p><ol style="display:none;margin-left:14px;padding-left:14px;line-height:160%;"><li><a href="#t0">11&nbsp;前言</a></li><li><a href="#t1">12&nbsp;activiti&nbsp;源码</a></li><li><a href="#t2">13&nbsp;activiti&nbsp;动态配置实战</a></li></ol></div><div style="clear:both"></div><div id="article_content" class="article_content tracking-ad" data-mod="popu_307" data-dsm="post">
+
+        <h3><a name="t0" target="_blank"></a><span style="font-size:14px">1.1.1.&nbsp;<strong>前言</strong></span></h3>
+        <p><span style="font-size:14px">用户故事：现在有这样一个需求，第一个需求：公司的开发环境，<a href="http://lib.csdn.net/base/softwaretest" class="replace_word" title="软件测试知识库" target="_blank" style="color:#df3434; font-weight:bold;">测试</a>环境以及线上环境，我们使用的<a href="http://lib.csdn.net/base/mysql" class="replace_word" title="MySQL知识库" target="_blank" style="color:#df3434; font-weight:bold;">数据库</a>是不一样的，我们必须能够任意的切换数据库进行测试和发布，对数据库连接字符串我们需要加密，保证我们的数据库连接不能被发现。必须确保我们的数据库不能暴露出去，第二个需求，我们需要监控activiti 工作流引擎，在流程启动的之前，我们要保证我们的所有属性都注入进去，如果有些属性没有注入进去，我们是不能让流程启动起来的。也就是进行必要饿属性检测，如果没有期望的属性，直接报错，在流程实例化之后，输出log<span style="font-family:宋体">日志，确保我们的属性都是正确的。并且监控引擎中所有的值<strong>。</strong></span></span></p>
+        <p><strong><span style="font-size:14px">第一个需求如何解决呢？</span></strong></p>
+        <p><strong><span style="font-size:14px">我们来看一下常规的数据库配置，程序的配置如下：</span></strong></p>
+        <p><span style="font-size:14px">&nbsp;<span style="color:rgb(0,0,255)">&lt;bean</span>&nbsp;<span style="color:rgb(255,0,0)">id</span>=<em><span style="color:rgb(255,0,255)">"processEngineConfiguration"</span></em>&nbsp;<span style="color:rgb(255,0,0)">class</span>=<em><span style="color:rgb(255,0,255)">"org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration"</span></em><span style="color:rgb(0,0,255)">&gt;</span><strong></strong></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"jdbcUrl"</span></em>&nbsp;<span style="color:rgb(255,0,0)">value</span>=<em><span style="color:rgb(255,0,255)">"jdbc:<a href="http://lib.csdn.net/base/mysql" class="replace_word" title="MySQL知识库" target="_blank" style="color:#df3434; font-weight:bold;">MySQL</a>://</span><span style="color:rgb(255,0,255)">localhost</span><span style="color:rgb(255,0,255)">:3306/activiti"</span></em><span style="color:rgb(0,0,255)">/&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"jdbcDriver"</span></em>&nbsp;<span style="color:rgb(255,0,0)">value</span>=<em><span style="color:rgb(255,0,255)">"com.<a href="http://lib.csdn.net/base/mysql" class="replace_word" title="MySQL知识库" target="_blank" style="color:#df3434; font-weight:bold;">mysql</a>.jdbc.Driver"</span></em><span style="color:rgb(0,0,255)">/&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"jdbcUsername"</span></em>&nbsp;<span style="color:rgb(255,0,0)">value</span>=<em><span style="color:rgb(255,0,255)">"root"</span></em><span style="color:rgb(0,0,255)">/&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"jdbcPassword"</span></em>&nbsp;<span style="color:rgb(255,0,0)">value</span>=<em><span style="color:rgb(255,0,255)">"</span><span style="color:rgb(255,0,255)">123</span><span style="color:rgb(255,0,255)">"</span></em><span style="color:rgb(0,0,255)">/&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;<span style="color:rgb(0,0,255)">&lt;/bean&gt;</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(0,0,255)">看到上面的配置，是不是似曾相识的感觉，没错就是这么简单，但是如何确保能任意的切换呢，仔细想想还是很简单的，那里变化隔离那里嘛，这个时候我们可以把这些这些变化的东西隔离出去，放到<span style="font-family:Courier New">jdbc.properties</span><span style="font-family:宋体">中，新建</span></span><span style="color:rgb(0,0,255)">jdbc.properties<span style="font-family:宋体">把变化的内容设置进去到</span><span style="font-family:Courier New">jdbc.properties</span><span style="font-family:宋体">，</span><span style="font-family:Courier New">jdbc.properties</span><span style="font-family:宋体">内容</span></span><span style="color:rgb(0,0,255)">如下：</span></span></p>
+        <p><span style="font-size:14px">jdbcUrl=<span style="color:rgb(42,0,255)">jdbc:mysql://</span><em><span style="color:rgb(255,0,255)">localhost</span></em><span style="color:rgb(42,0,255)">:3306/activiti</span></span></p>
+        <p><span style="font-size:14px">jdbcDriver=<span style="color:rgb(42,0,255)">com.mysql.jdbc.Driver</span></span></p>
+        <p><span style="font-size:14px">jdbcUsername=<span style="color:rgb(42,0,255)">root</span></span></p>
+        <p><span style="font-size:14px">jdbcPassword=<span style="color:rgb(42,0,255)">123</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(42,0,255)">上面把变化的东西隔离出来，那程序怎么能够使用</span><span style="color:rgb(0,0,255)">jdbc.properties<span style="font-family:宋体">中的配置信息呢？这是一个很关键的问题，我们之前用的</span></span><span style="color:rgb(42,0,255)">activiti</span><span style="color:rgb(42,0,255)">版本是</span><span style="color:rgb(42,0,255)">5.12<span style="font-family:宋体">，所以当时的设计就是修改源码，主要修改</span></span><a target="_blank" href=""><span style="color:rgb(0,0,0)">org</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">activiti</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">engine</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">impl</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">cfg</span></a>.ProcessEngineConfigurationImpl类，在init()方法中我们设计一个钩子函数，然后子类负责实现上面的这些功能，主要就修改的类是<a target="_blank" href=""><span style="color:rgb(0,0,0)">org</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">activiti</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">engine</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">impl</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">cfg</span></a>.ProcessEngineConfigurationImpl，修改ProcessEngineConfigurationImpl类中的数据库连接的信息，由于目前最新的版本<span style="color:rgb(42,0,255)">activiti</span><span style="color:rgb(42,0,255)">&nbsp;5.19<span style="font-family:宋体">版本，这个版本已经支持了这种实现，具体的实现都差不多，只是我们不用修改源码，直接扩展了，这不就是软件设计中的开闭原则。对新增开放对修改关闭。</span></span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(42,0,255)">下面看下</span><span style="color:rgb(42,0,255)">activiti</span><span style="color:rgb(42,0,255)">&nbsp;5.19<span style="font-family:宋体">是如何可以实现这种功能需求的。</span></span></span></p>
+        <h3><a name="t1" target="_blank"></a><span style="font-size:14px">1.1.2.&nbsp;<strong>activiti&nbsp;源码</strong></span></h3>
+        <p><span style="font-size:14px"><span style="color:rgb(42,0,255)">首先看一下</span><a target="_blank" href=""><span style="color:rgb(0,0,0)">org</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">activiti</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">engine</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">impl</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">cfg</span></a>.ProcessEngineConfigurationImpl类中的init(）方法哪个可以实现这种需求，了解底层内核实现才能很方便的扩展嘛。</span></p>
+        <p><span style="font-size:14px">ProcessEngineConfigurationImpl中的init()部分方法如下：</span></p>
+        <p><span style="font-size:14px">//初始化<span style="color:rgb(128,0,128)">configurators</span><span style="color:rgb(128,0,128)">集合</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(0,48,96)">initConfigurators</span>()<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">//<span style="font-family:宋体">调用</span></span><span style="color:rgb(106,62,62)">configurator</span><span style="color:rgb(64,0,0)">.</span><span style="color:rgb(0,48,96)">beforeInit</span><span style="color:rgb(0,48,96)">方法</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(0,48,96)">configuratorsBeforeInit</span>()<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="color:rgb(64,0,0)"><span style="font-size:14px">...</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">//<span style="font-family:宋体">调用</span></span><span style="color:rgb(106,62,62)">configurator</span><span style="color:rgb(64,0,0)">.</span><span style="color:rgb(0,48,96)">configure</span><span style="color:rgb(0,48,96)">()<span style="font-family:宋体">方法</span></span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(0,48,96)">configuratorsAfterInit</span>()<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="color:rgb(42,0,255)"><span style="font-size:14px">上面的三个核心方法实现如下所示：</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(42,0,255)">内部</span><span style="color:rgb(64,0,0)">ServiceLoader</span><span style="color:rgb(64,0,0)">可以参考</span><span style="color:rgb(0,0,0)"><a target="_blank" href="http://blog.csdn.net/qq_30739519/article/details/51164954">java.util.ServiceLoader使用</a><a target="_blank" href="http://blog.csdn.net/qq_30739519/article/details/51164954"><span style="color:rgb(64,0,0); font-size:14px">http://blog.csdn.net/qq_30739519/article/details/51164954</span></a></span><span style="color:rgb(64,0,0)"><span style="font-family:宋体">这篇文章</span></span></span></p>
+        <p></p>
+        <div class="dp-highlighter bg_java"><div class="bar"><div class="tools"><b>[java]</b> <a href="#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command('ViewSource',this);return false;" target="_blank">view plain</a><span data-mod="popu_168"> <a href="#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command('CopyToClipboard',this);return false;" target="_blank">copy</a><div style="position: absolute; left: 721px; top: 1451px; width: 18px; height: 18px; z-index: 99;"></div></span><span data-mod="popu_169"> <a href="#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command('PrintSource',this);return false;" target="_blank">print</a></span><a href="#" class="About" title="?" onclick="dp.sh.Toolbar.Command('About',this);return false;" target="_blank">?</a></div></div><ol start="1" class="dp-j"><li class="alt"><span><span class="keyword">protected</span><span>&nbsp;List&lt;ProcessEngineConfigurator&gt;&nbsp;configurators;&nbsp;&nbsp;</span></span></li><li class=""><span><span class="keyword">protected</span><span>&nbsp;List&lt;ProcessEngineConfigurator&gt;&nbsp;allConfigurators;&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;<span class="keyword">protected</span><span>&nbsp;</span><span class="keyword">boolean</span><span>&nbsp;enableConfiguratorServiceLoader&nbsp;=&nbsp;</span><span class="keyword">true</span><span>;&nbsp;</span><span class="comment">//&nbsp;Enabled&nbsp;by&nbsp;default.&nbsp;In&nbsp;certain&nbsp;environments&nbsp;this&nbsp;should&nbsp;be&nbsp;set&nbsp;to&nbsp;false&nbsp;(eg&nbsp;osgi)</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;<span class="keyword">protected</span><span>&nbsp;</span><span class="keyword">void</span><span>&nbsp;initConfigurators()&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;<span class="comment">//初始化数组集合</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;allConfigurators&nbsp;=&nbsp;<span class="keyword">new</span><span>&nbsp;ArrayList&lt;ProcessEngineConfigurator&gt;();&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;<span class="comment">//&nbsp;Configurators&nbsp;that&nbsp;are&nbsp;explicitely&nbsp;added&nbsp;to&nbsp;the&nbsp;config</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span><span class="comment">//如果集合存在值就循环添加进去</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(configurators&nbsp;!=&nbsp;</span><span class="keyword">null</span><span>)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span><span>&nbsp;(ProcessEngineConfigurator&nbsp;configurator&nbsp;:&nbsp;configurators)&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allConfigurators.add(configurator);&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;Auto&nbsp;discovery&nbsp;through&nbsp;ServiceLoader&nbsp;默认是true</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(enableConfiguratorServiceLoader)&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;ClassLoader&nbsp;classLoader&nbsp;=&nbsp;getClassLoader();&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(classLoader&nbsp;==&nbsp;</span><span class="keyword">null</span><span>)&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;classLoader&nbsp;=&nbsp;ReflectUtil.getClassLoader();&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//循环添加进去</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;ServiceLoader&lt;ProcessEngineConfigurator&gt;&nbsp;configuratorServiceLoader&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ServiceLoader.load(ProcessEngineConfigurator.<span class="keyword">class</span><span>,&nbsp;classLoader);&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span><span>&nbsp;nrOfServiceLoadedConfigurators&nbsp;=&nbsp;</span><span class="number">0</span><span>;&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span><span>&nbsp;(ProcessEngineConfigurator&nbsp;configurator&nbsp;:&nbsp;configuratorServiceLoader)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;allConfigurators.add(configurator);&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;nrOfServiceLoadedConfigurators++;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(nrOfServiceLoadedConfigurators&nbsp;&gt;&nbsp;</span><span class="number">0</span><span>)&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;log.info(<span class="string">"Found&nbsp;{}&nbsp;auto-discoverable&nbsp;Process&nbsp;Engine&nbsp;Configurator{}"</span><span>,&nbsp;nrOfServiceLoadedConfigurators++,&nbsp;nrOfServiceLoadedConfigurators&nbsp;&gt;&nbsp;</span><span class="number">1</span><span>&nbsp;?&nbsp;</span><span class="string">"s"</span><span>&nbsp;:&nbsp;</span><span class="string">""</span><span>);&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//如果集合不为空&nbsp;存在多个值的话就按照升序排列&nbsp;根据什么作为排序规则呢，很显然根据getPriority中的值进行排序&nbsp;比如a类getPriority&nbsp;10&nbsp;b类getPriority&nbsp;100&nbsp;那么排序后就是&nbsp;a，b现执行a类对的再执行b类的。</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(!allConfigurators.isEmpty())&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;Order&nbsp;them&nbsp;according&nbsp;to&nbsp;the&nbsp;priorities&nbsp;(usefule&nbsp;for&nbsp;dependent&nbsp;configurator)</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;Collections.sort(allConfigurators,&nbsp;<span class="keyword">new</span><span>&nbsp;Comparator&lt;ProcessEngineConfigurator&gt;()&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="annotation">@Override</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span><span>&nbsp;</span><span class="keyword">int</span><span>&nbsp;compare(ProcessEngineConfigurator&nbsp;configurator1,&nbsp;ProcessEngineConfigurator&nbsp;configurator2)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span><span>&nbsp;priority1&nbsp;=&nbsp;configurator1.getPriority();&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span><span>&nbsp;priority2&nbsp;=&nbsp;configurator2.getPriority();&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(priority1&nbsp;&lt;&nbsp;priority2)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span><span>&nbsp;-</span><span class="number">1</span><span>;&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="keyword">else</span><span>&nbsp;</span><span class="keyword">if</span><span>&nbsp;(priority1&nbsp;&gt;&nbsp;priority2)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span><span>&nbsp;</span><span class="number">1</span><span>;&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span><span>&nbsp;</span><span class="number">0</span><span>;&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt"><span>});&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;Execute&nbsp;the&nbsp;configurators</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;log.info(<span class="string">"Found&nbsp;{}&nbsp;Process&nbsp;Engine&nbsp;Configurators&nbsp;in&nbsp;total:"</span><span>,&nbsp;allConfigurators.size());&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span><span>&nbsp;(ProcessEngineConfigurator&nbsp;configurator&nbsp;:&nbsp;allConfigurators)&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;log.info(<span class="string">"{}&nbsp;(priority:{})"</span><span>,&nbsp;configurator.getClass(),&nbsp;configurator.getPriority());&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;<span class="comment">//循环所有allConfigurators&nbsp;执行beforeInit方法</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;<span class="keyword">protected</span><span>&nbsp;</span><span class="keyword">void</span><span>&nbsp;configuratorsBeforeInit()&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;<span class="keyword">for</span><span>&nbsp;(ProcessEngineConfigurator&nbsp;configurator&nbsp;:&nbsp;allConfigurators)&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;log.info(<span class="string">"Executing&nbsp;beforeInit()&nbsp;of&nbsp;{}&nbsp;(priority:{})"</span><span>,&nbsp;configurator.getClass(),&nbsp;configurator.getPriority());&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;configurator.beforeInit(<span class="keyword">this</span><span>);&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;<span class="comment">//循环所有allConfigurators&nbsp;执行configuratorsAfterInit方法</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;<span class="keyword">protected</span><span>&nbsp;</span><span class="keyword">void</span><span>&nbsp;configuratorsAfterInit()&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;<span class="keyword">for</span><span>&nbsp;(ProcessEngineConfigurator&nbsp;configurator&nbsp;:&nbsp;allConfigurators)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;log.info(<span class="string">"Executing&nbsp;configure()&nbsp;of&nbsp;{}&nbsp;(priority:{})"</span><span>,&nbsp;configurator.getClass(),&nbsp;configurator.getPriority());&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;configurator.configure(<span class="keyword">this</span><span>);&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;}&nbsp;&nbsp;</span></li></ol></div><pre name="code" class="java" style="display: none;">protected List&lt;ProcessEngineConfigurator&gt; configurators;
+protected List&lt;ProcessEngineConfigurator&gt; allConfigurators;
+ protected boolean enableConfiguratorServiceLoader = true; // Enabled by default. In certain environments this should be set to false (eg osgi)
+  protected void initConfigurators() {
+  //初始化数组集合
+  allConfigurators = new ArrayList&lt;ProcessEngineConfigurator&gt;();
+
+  // Configurators that are explicitely added to the config
+//如果集合存在值就循环添加进去
+    if (configurators != null) {
+      for (ProcessEngineConfigurator configurator : configurators) {
+        allConfigurators.add(configurator);
+      }
+    }
+
+    // Auto discovery through ServiceLoader 默认是true
+    if (enableConfiguratorServiceLoader) {
+    ClassLoader classLoader = getClassLoader();
+    if (classLoader == null) {
+    classLoader = ReflectUtil.getClassLoader();
+    }
+    //循环添加进去
+    ServiceLoader&lt;ProcessEngineConfigurator&gt; configuratorServiceLoader
+    = ServiceLoader.load(ProcessEngineConfigurator.class, classLoader);
+    int nrOfServiceLoadedConfigurators = 0;
+    for (ProcessEngineConfigurator configurator : configuratorServiceLoader) {
+    allConfigurators.add(configurator);
+    nrOfServiceLoadedConfigurators++;
+    }
+
+    if (nrOfServiceLoadedConfigurators &gt; 0) {
+    log.info("Found {} auto-discoverable Process Engine Configurator{}", nrOfServiceLoadedConfigurators++, nrOfServiceLoadedConfigurators &gt; 1 ? "s" : "");
+    }
+    //如果集合不为空 存在多个值的话就按照升序排列 根据什么作为排序规则呢，很显然根据getPriority中的值进行排序 比如a类getPriority 10 b类getPriority 100 那么排序后就是 a，b现执行a类对的再执行b类的。
+    if (!allConfigurators.isEmpty()) {
+
+    // Order them according to the priorities (usefule for dependent configurator)
+    Collections.sort(allConfigurators, new Comparator&lt;ProcessEngineConfigurator&gt;() {
+    @Override
+    public int compare(ProcessEngineConfigurator configurator1, ProcessEngineConfigurator configurator2) {
+    int priority1 = configurator1.getPriority();
+    int priority2 = configurator2.getPriority();
+
+    if (priority1 &lt; priority2) {
+    return -1;
+    } else if (priority1 &gt; priority2) {
+    return 1;
+    }
+    return 0;
+    }
+});
+
+    // Execute the configurators
+    log.info("Found {} Process Engine Configurators in total:", allConfigurators.size());
+    for (ProcessEngineConfigurator configurator : allConfigurators) {
+    log.info("{} (priority:{})", configurator.getClass(), configurator.getPriority());
+    }
+
+    }
+
+    }
+  }
+  //循环所有allConfigurators 执行beforeInit方法
+  protected void configuratorsBeforeInit() {
+  for (ProcessEngineConfigurator configurator : allConfigurators) {
+  log.info("Executing beforeInit() of {} (priority:{})", configurator.getClass(), configurator.getPriority());
+  configurator.beforeInit(this);
+  }
+  }
+  //循环所有allConfigurators 执行configuratorsAfterInit方法
+  protected void configuratorsAfterInit() {
+  for (ProcessEngineConfigurator configurator : allConfigurators) {
+  log.info("Executing configure() of {} (priority:{})", configurator.getClass(), configurator.getPriority());
+  configurator.configure(this);
+  }
+  }</pre><br>
+        <br>
+        <p></p>
+        <h3><a name="t2" target="_blank"></a><span style="font-size:14px">1.1.3.&nbsp;<strong>activiti&nbsp;动态配置实战</strong></span></h3>
+        <p><span style="font-size:14px">好了上面说了源码的实现，下面来点干货吧，看看如何使用自定义的类实现修改配置文件。</span></p>
+        <p><span style="font-size:14px">我们使用两个类看他们的执行过程是否跟上面源码解析的一直：</span></p>
+        <p><span style="font-size:14px">定义<a target="_blank" href=""><span style="color:rgb(0,0,0)">com</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">daling</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">ch1</span></a>.<a target="_blank" href=""><span style="color:rgb(0,0,0)">init</span></a>.MyProcessEngineConfigurator1如下所示：</span></p>
+        <p></p>
+        <div class="dp-highlighter bg_java"><div class="bar"><div class="tools"><b>[java]</b> <a href="#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command('ViewSource',this);return false;" target="_blank">view plain</a><span data-mod="popu_168"> <a href="#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command('CopyToClipboard',this);return false;" target="_blank">copy</a><div style="position: absolute; left: 721px; top: 3095px; width: 18px; height: 18px; z-index: 99;"></div></span><span data-mod="popu_169"> <a href="#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command('PrintSource',this);return false;" target="_blank">print</a></span><a href="#" class="About" title="?" onclick="dp.sh.Toolbar.Command('About',this);return false;" target="_blank">?</a></div></div><ol start="1" class="dp-j"><li class="alt"><span><span class="annotation">@Service</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">class</span><span>&nbsp;MyProcessEngineConfigurator1&nbsp;</span><span class="keyword">extends</span><span>&nbsp;&nbsp;AbstractProcessEngineConfigurator{&nbsp;&nbsp;</span></span></li><li class="alt"><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">static</span><span>&nbsp;</span><span class="keyword">int</span><span>&nbsp;DEFAULT_CONFIGURATOR_PRIORITY&nbsp;=&nbsp;</span><span class="number">100</span><span>;&nbsp;&nbsp;</span></span></li><li class=""><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">void</span><span>&nbsp;beforeInit(&nbsp;&nbsp;</span></span></li><li class="alt"><span>ProcessEngineConfigurationImpl&nbsp;processEngineConfiguration)&nbsp;{&nbsp;&nbsp;</span></li><li class=""><span>System.out.println(<span class="string">"1111111111111"</span><span>);&nbsp;&nbsp;</span></span></li><li class="alt"><span>}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">void</span><span>&nbsp;configure(&nbsp;&nbsp;</span></span></li><li class=""><span>ProcessEngineConfigurationImpl&nbsp;processEngineConfiguration)&nbsp;{&nbsp;&nbsp;</span></li><li class="alt"><span>}&nbsp;&nbsp;</span></li><li class=""><span><span class="annotation">@Override</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">int</span><span>&nbsp;getPriority()&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span><span class="keyword">return</span><span>&nbsp;DEFAULT_CONFIGURATOR_PRIORITY;&nbsp;&nbsp;</span></span></li><li class="alt"><span>}&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>}&nbsp;&nbsp;</span></li><li class=""><span>定义com.daling.ch1.init.MyProcessEngineConfigurator2如下所示：&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;</span></li><li class=""><span><span class="annotation">@Service</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">class</span><span>&nbsp;MyProcessEngineConfigurator2&nbsp;</span><span class="keyword">extends</span><span>&nbsp;&nbsp;AbstractProcessEngineConfigurator{&nbsp;&nbsp;</span></span></li><li class=""><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">static</span><span>&nbsp;</span><span class="keyword">int</span><span>&nbsp;DEFAULT_CONFIGURATOR_PRIORITY&nbsp;=&nbsp;</span><span class="number">200</span><span>;&nbsp;&nbsp;</span></span></li><li class="alt"><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">void</span><span>&nbsp;beforeInit(&nbsp;&nbsp;</span></span></li><li class=""><span>ProcessEngineConfigurationImpl&nbsp;processEngineConfiguration)&nbsp;{&nbsp;&nbsp;</span></li><li class="alt"><span>System.out.println(<span class="string">"2222222222222222"</span><span>);&nbsp;&nbsp;</span></span></li><li class=""><span>}&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;</span></li><li class=""><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">void</span><span>&nbsp;configure(&nbsp;&nbsp;</span></span></li><li class="alt"><span>ProcessEngineConfigurationImpl&nbsp;processEngineConfiguration)&nbsp;{&nbsp;&nbsp;</span></li><li class=""><span>}&nbsp;&nbsp;</span></li><li class="alt"><span><span class="annotation">@Override</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">int</span><span>&nbsp;getPriority()&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt"><span><span class="keyword">return</span><span>&nbsp;DEFAULT_CONFIGURATOR_PRIORITY;&nbsp;&nbsp;</span></span></li><li class=""><span>}&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>}&nbsp;&nbsp;</span></li></ol></div><pre name="code" class="java" style="display: none;">@Service
+public class MyProcessEngineConfigurator1 extends  AbstractProcessEngineConfigurator{
+public static int DEFAULT_CONFIGURATOR_PRIORITY = 100;
+public void beforeInit(
+ProcessEngineConfigurationImpl processEngineConfiguration) {
+System.out.println("1111111111111");
+}
+
+public void configure(
+ProcessEngineConfigurationImpl processEngineConfiguration) {
+}
+@Override
+public int getPriority() {
+return DEFAULT_CONFIGURATOR_PRIORITY;
+}
+
+}
+定义com.daling.ch1.init.MyProcessEngineConfigurator2如下所示：
+
+@Service
+public class MyProcessEngineConfigurator2 extends  AbstractProcessEngineConfigurator{
+public static int DEFAULT_CONFIGURATOR_PRIORITY = 200;
+public void beforeInit(
+ProcessEngineConfigurationImpl processEngineConfiguration) {
+System.out.println("2222222222222222");
+}
+
+public void configure(
+ProcessEngineConfigurationImpl processEngineConfiguration) {
+}
+@Override
+public int getPriority() {
+return DEFAULT_CONFIGURATOR_PRIORITY;
+}
+
+}</pre><br>
+        <br>
+        <p></p>
+        <p><span style="font-size:14px">在<a href="http://lib.csdn.net/base/javaee" class="replace_word" title="Java EE知识库" target="_blank" style="color:#df3434; font-weight:bold;">spring</a><span style="font-family:宋体">中开启</span>&nbsp;包的扫描代码：&nbsp;<span style="color:rgb(0,0,255)">&lt;context:component-scan</span>&nbsp;<span style="color:rgb(255,0,0)">base-package</span>=<em><span style="color:rgb(255,0,255)">"com"</span></em><span style="color:rgb(0,0,255)">/&gt;</span>&nbsp;</span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(42,0,255)">activiti</span><span style="color:rgb(42,0,255)">&nbsp;引擎配置如下所示：</span></span></p>
+        <p><span style="font-size:14px">&nbsp;<span style="color:rgb(0,0,255)">&lt;bean</span>&nbsp;<span style="color:rgb(255,0,0)">id</span>=<em><span style="color:rgb(255,0,255)">"processEngineConfiguration"</span></em>&nbsp;<span style="color:rgb(255,0,0)">class</span>=<em><span style="color:rgb(255,0,255)">"org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration"</span></em><span style="color:rgb(0,0,255)">&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"jdbcUrl"</span></em>&nbsp;<span style="color:rgb(255,0,0)">value</span>=<em><span style="color:rgb(255,0,255)">"jdbc:mysql://</span><span style="color:rgb(255,0,255)">localhost</span><span style="color:rgb(255,0,255)">3306/activiti"</span></em><span style="color:rgb(0,0,255)">&gt;&lt;/property&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"jdbcDriver"</span></em>&nbsp;<span style="color:rgb(255,0,0)">value</span>=<em><span style="color:rgb(255,0,255)">"com.mysql.jdbc.Driver"</span></em><span style="color:rgb(0,0,255)">/&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"jdbcUsername"</span></em>&nbsp;<span style="color:rgb(255,0,0)">value</span>=<em><span style="color:rgb(255,0,255)">"root"</span></em><span style="color:rgb(0,0,255)">/&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"jdbcPassword"</span></em>&nbsp;<span style="color:rgb(255,0,0)">value</span>=<em><span style="color:rgb(255,0,255)">"</span><span style="color:rgb(255,0,255)">a</span><span style="color:rgb(255,0,255)">"</span></em><span style="color:rgb(0,0,255)">/&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"configurators"</span></em><span style="color:rgb(0,0,255)">&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;list&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;bean</span>&nbsp;<span style="color:rgb(255,0,0)">class</span>=<em><span style="color:rgb(255,0,255)">"com.daling.ch1.init.MyProcessEngineConfigurator2"</span></em><span style="color:rgb(0,0,255)">&gt;&lt;/bean&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;bean</span>&nbsp;<span style="color:rgb(255,0,0)">class</span>=<em><span style="color:rgb(255,0,255)">"com.daling.ch1.init.MyProcessEngineConfigurator1"</span></em><span style="color:rgb(0,0,255)">&gt;&lt;/bean&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;/list&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;/property&gt;</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(0,0,255)">&lt;property</span>&nbsp;<span style="color:rgb(255,0,0)">name</span>=<em><span style="color:rgb(255,0,255)">"activityFontName"</span></em>&nbsp;<span style="color:rgb(255,0,0)">value</span>=<em><span style="color:rgb(255,0,255)">"<span style="font-family:宋体">宋体</span><span style="font-family:Courier New">"</span></span></em><span style="color:rgb(0,0,255)">&gt;&lt;/property&gt;</span></span></p>
+        <p><span style="font-size:14px">&nbsp;&nbsp;&nbsp;<span style="color:rgb(0,0,255)">&lt;/bean&gt;</span></span></p>
+        <p><span style="color:rgb(0,0,255)"><span style="font-size:14px">测试代码如下：</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">ProcessEnginesDemo</span><strong><span style="color:rgb(128,128,128)">demo</span></strong><span style="color:rgb(64,0,0)">&nbsp;=</span><strong><span style="color:rgb(0,0,128)">new</span></strong><span style="color:rgb(64,0,0)">&nbsp;</span><span style="color:rgb(0,48,96)">ProcessEnginesDemo</span>()<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">RepositoryService</span><strong><u><span style="color:rgb(128,128,128)">repositoryService2</span></u></strong><span style="color:rgb(64,0,0)">&nbsp;=</span><span style="color:rgb(106,62,62)">demo</span><span style="color:rgb(64,0,0)">.</span><span style="color:rgb(0,48,96)">getRepositoryService</span>()<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="font-size:14px">先来运行一下程序看输出是否正确，部分输出如下所示：</span></p>
+        <p><span style="font-size:14px">1111111111111</span></p>
+        <p><span style="font-size:14px">20:20:18.245 [main] INFO &nbsp;o.a.e.i.c.ProcessEngineConfigurationImpl - Executing beforeInit() of class com.daling.ch1.init.MyProcessEngineConfigurator2 (priority:200)</span></p>
+        <p><span style="font-size:14px">2222222222222222</span></p>
+        <p><span style="font-size:14px">确实说明了程序的执行顺序就是按照<strong><u>getPriority()<span style="font-family:宋体">方法值升序执行的。</span></u></strong></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">ProcessEngineConfigurator</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">类的定义如下：</span></span></p>
+        <p></p>
+        <div class="dp-highlighter bg_java"><div class="bar"><div class="tools"><b>[java]</b> <a href="#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command('ViewSource',this);return false;" target="_blank">view plain</a><span data-mod="popu_168"> <a href="#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command('CopyToClipboard',this);return false;" target="_blank">copy</a><div style="position: absolute; left: 721px; top: 4541px; width: 18px; height: 18px; z-index: 99;"></div></span><span data-mod="popu_169"> <a href="#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command('PrintSource',this);return false;" target="_blank">print</a></span><a href="#" class="About" title="?" onclick="dp.sh.Toolbar.Command('About',this);return false;" target="_blank">?</a></div></div><ol start="1" class="dp-j"><li class="alt"><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">interface</span><span>&nbsp;ProcessEngineConfigurator&nbsp;{&nbsp;&nbsp;</span></span></li><li class=""><span><span class="comment">/**</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;*&nbsp;Called&nbsp;&lt;b&gt;before&lt;/b&gt;&nbsp;any&nbsp;initialisation&nbsp;has&nbsp;been&nbsp;done.</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;*&nbsp;This&nbsp;can&nbsp;for&nbsp;example&nbsp;be&nbsp;useful&nbsp;to&nbsp;change&nbsp;configuration&nbsp;settings</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;*&nbsp;before&nbsp;anything&nbsp;that&nbsp;uses&nbsp;those&nbsp;properties&nbsp;is&nbsp;created.</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;*</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;*&nbsp;Allows&nbsp;to&nbsp;tweak&nbsp;the&nbsp;process&nbsp;engine&nbsp;by&nbsp;passing&nbsp;the&nbsp;{@link&nbsp;ProcessEngineConfigurationImpl}</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;which&nbsp;allows&nbsp;tweaking&nbsp;it&nbsp;programmatically.</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;*</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;*&nbsp;An&nbsp;example&nbsp;is&nbsp;the&nbsp;jdbc&nbsp;url.&nbsp;When&nbsp;a&nbsp;{@link&nbsp;ProcessEngineConfigurator}&nbsp;instance</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;*&nbsp;wants&nbsp;to&nbsp;change&nbsp;it,&nbsp;it&nbsp;needs&nbsp;to&nbsp;do&nbsp;it&nbsp;in&nbsp;this&nbsp;method,&nbsp;or&nbsp;otherwise</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;*&nbsp;the&nbsp;datasource&nbsp;would&nbsp;already&nbsp;have&nbsp;been&nbsp;created&nbsp;with&nbsp;the&nbsp;'old'&nbsp;value</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;*&nbsp;for&nbsp;the&nbsp;jdbc&nbsp;url.</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;*/</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span><span class="keyword">void</span><span>&nbsp;beforeInit(ProcessEngineConfigurationImpl&nbsp;processEngineConfiguration);&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;<span class="comment">/**</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;Called&nbsp;when&nbsp;the&nbsp;engine&nbsp;boots&nbsp;up,&nbsp;before&nbsp;it&nbsp;is&nbsp;usable,&nbsp;but&nbsp;after</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;the&nbsp;initialisation&nbsp;of&nbsp;internal&nbsp;objects&nbsp;is&nbsp;done.</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;Allows&nbsp;to&nbsp;tweak&nbsp;the&nbsp;process&nbsp;engine&nbsp;by&nbsp;passing&nbsp;the&nbsp;{@link&nbsp;ProcessEngineConfigurationImpl}</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;which&nbsp;allows&nbsp;tweaking&nbsp;it&nbsp;programmatically.</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;An&nbsp;example&nbsp;is&nbsp;the&nbsp;ldap&nbsp;user/group&nbsp;manager,&nbsp;which&nbsp;is&nbsp;an&nbsp;addition&nbsp;to&nbsp;the&nbsp;engine.</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;No&nbsp;default&nbsp;properties&nbsp;need&nbsp;to&nbsp;be&nbsp;overridden&nbsp;for&nbsp;this&nbsp;(otherwise&nbsp;the&nbsp;{@link&nbsp;#beforeInit(ProcessEngineConfigurationImpl)}&nbsp;</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;method&nbsp;should&nbsp;be&nbsp;used)&nbsp;so&nbsp;the&nbsp;logic&nbsp;contained&nbsp;in&nbsp;this&nbsp;method&nbsp;is&nbsp;executed</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;after&nbsp;initialisation&nbsp;of&nbsp;the&nbsp;default&nbsp;objects.</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;Probably&nbsp;a&nbsp;better&nbsp;name&nbsp;would&nbsp;be&nbsp;'afterInit'&nbsp;(cfr&nbsp;{@link&nbsp;#beforeInit(ProcessEngineConfigurationImpl)}),</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;but&nbsp;not&nbsp;possible&nbsp;due&nbsp;to&nbsp;backwards&nbsp;compatibility.</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*/</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;<span class="keyword">void</span><span>&nbsp;configure(ProcessEngineConfigurationImpl&nbsp;processEngineConfiguration);&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;<span class="comment">/**</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;When&nbsp;the&nbsp;{@link&nbsp;ProcessEngineConfigurator}&nbsp;instances&nbsp;are&nbsp;used,&nbsp;they&nbsp;are&nbsp;first</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;ordered&nbsp;by&nbsp;this&nbsp;priority&nbsp;number&nbsp;(lowest&nbsp;to&nbsp;highest).</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;If&nbsp;you&nbsp;have&nbsp;dependencies&nbsp;between&nbsp;{@link&nbsp;ProcessEngineConfigurator}</span>&nbsp;</span></li><li class=""><span><span class="comment">&nbsp;&nbsp;&nbsp;*&nbsp;instances,&nbsp;use&nbsp;the&nbsp;priorities&nbsp;accordingly&nbsp;to&nbsp;order&nbsp;them&nbsp;as&nbsp;needed.</span>&nbsp;</span></li><li class="alt"><span><span class="comment">&nbsp;&nbsp;&nbsp;*/</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;<span class="keyword">int</span><span>&nbsp;getPriority();&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>}&nbsp;&nbsp;</span></li></ol></div><pre name="code" class="java" style="display: none;">public interface ProcessEngineConfigurator {
+/**
+ * Called &lt;b&gt;before&lt;/b&gt; any initialisation has been done.
+ * This can for example be useful to change configuration settings
+ * before anything that uses those properties is created.
+ *
+ * Allows to tweak the process engine by passing the {@link ProcessEngineConfigurationImpl}
+   * which allows tweaking it programmatically.
+ *
+ * An example is the jdbc url. When a {@link ProcessEngineConfigurator} instance
+ * wants to change it, it needs to do it in this method, or otherwise
+ * the datasource would already have been created with the 'old' value
+ * for the jdbc url.
+ */
+void beforeInit(ProcessEngineConfigurationImpl processEngineConfiguration);
+
+  /**
+   * Called when the engine boots up, before it is usable, but after
+   * the initialisation of internal objects is done.
+   *
+   * Allows to tweak the process engine by passing the {@link ProcessEngineConfigurationImpl}
+   * which allows tweaking it programmatically.
+   *
+   * An example is the ldap user/group manager, which is an addition to the engine.
+   * No default properties need to be overridden for this (otherwise the {@link #beforeInit(ProcessEngineConfigurationImpl)}
+   * method should be used) so the logic contained in this method is executed
+   * after initialisation of the default objects.
+   *
+   * Probably a better name would be 'afterInit' (cfr {@link #beforeInit(ProcessEngineConfigurationImpl)}),
+   * but not possible due to backwards compatibility.
+   */
+  void configure(ProcessEngineConfigurationImpl processEngineConfiguration);
+
+  /**
+   * When the {@link ProcessEngineConfigurator} instances are used, they are first
+   * ordered by this priority number (lowest to highest).
+   * If you have dependencies between {@link ProcessEngineConfigurator}
+   * instances, use the priorities accordingly to order them as needed.
+   */
+  int getPriority();
+
+}</pre><br>
+        <br>
+        <p></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0); background:rgb(192,192,192)">ProcessEngineConfigurator</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">类图关系如下：</span></span></p>
+        <p><span style="color:rgb(64,0,0); background:rgb(192,192,192)"><span style="font-size:14px">&nbsp;<img src="http://img.blog.csdn.net/20160416205012479?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center" alt=""></span></span></p>
+        <p><span style="color:rgb(64,0,0); background:rgb(192,192,192)"><span style="font-size:14px">&nbsp;</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0); background:rgb(192,192,192)">上面的类图</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">AbstractProcessEngineConfigurator</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">类实现了</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">ProcessEngineConfigurator</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">接口，</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">AbstractProcessEngineConfigurator</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">是一个抽象类，所以我们使用的时候继承</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">AbstractProcessEngineConfigurator</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">类复写里面的方法即可</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">(<span style="font-family:宋体">模板方法</span><span style="font-family:Courier New">)</span><span style="font-family:宋体">。</span></span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0); background:rgb(192,192,192)">上面我们自定义的类</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">MyProcessEngineConfigurator1</span><span style="color:rgb(64,0,0); background:rgb(192,192,192)">中的方法</span></span></p>
+        <p><span style="font-size:14px"><strong><span style="color:rgb(0,0,128)">public</span></strong><span style="color:rgb(64,0,0)">&nbsp;</span><strong><span style="color:rgb(0,0,128)">void</span></strong><span style="color:rgb(64,0,0)">&nbsp;</span><strong><span style="color:rgb(255,128,64); background:rgb(192,192,192)">beforeInit</span></strong>(</span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">ProcessEngineConfigurationImpl</span><strong><span style="color:rgb(128,128,128)">processEngineConfiguration</span></strong>)<span style="color:rgb(64,0,0)">&nbsp;</span>{</span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">System.</span><strong><em><span style="color:rgb(0,0,192)">out</span></em></strong><span style="color:rgb(64,0,0)">.</span><span style="color:rgb(0,48,96)">println</span>(<span style="color:rgb(42,0,255)">"1111111111111"</span>)<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="font-size:14px">}</span></p>
+        <p><span style="font-size:14px">&nbsp;</span></p>
+        <p><span style="font-size:14px"><strong><span style="color:rgb(0,0,128)">public</span></strong><span style="color:rgb(64,0,0)">&nbsp;</span><strong><span style="color:rgb(0,0,128)">void</span></strong><span style="color:rgb(64,0,0)">&nbsp;</span><strong><span style="color:rgb(255,128,64); background:rgb(192,192,192)">configure</span></strong>(</span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">ProcessEngineConfigurationImpl</span><strong><span style="color:rgb(128,128,128)">processEngineConfiguration</span></strong>)<span style="color:rgb(64,0,0)">&nbsp;</span>{</span></p>
+        <p></p>
+        <p><span style="font-size:14px">}</span></p>
+        <p><span style="font-size:14px">我们可以拿到<span style="color:rgb(64,0,0)">ProcessEngineConfigurationImpl</span><span style="color:rgb(64,0,0)">这个对象其实就是</span>StandaloneProcessEngineConfiguration的父类，里面有很多的属性我们就可以修改了。</span></p>
+        <p><span style="font-size:14px">怎么修改呢？只要拿到这个对象我们就很方便修改了。</span></p>
+        <p><span style="font-size:14px">具体的修改如下：</span></p>
+        <p><span style="font-size:14px">//<span style="font-family:宋体">伪代码 加载</span><span style="color:rgb(0,0,255)">jdbc.properties<span style="font-family:宋体">文件 获取配置的值，进行解密然后设置进去 解密<a href="http://lib.csdn.net/base/datastructure" class="replace_word" title="算法与数据结构知识库" target="_blank" style="color:#df3434; font-weight:bold;">算法</a>后续讲解，当然懂的话可以自己直接修改。</span></span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">descJdbc</span>(<u><span style="color:rgb(64,0,0)">ProperUtils</span></u><span style="color:rgb(64,0,0)">.load</span>())<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(106,62,62)">processEngineConfiguration</span><span style="color:rgb(64,0,0)">.</span><span style="color:rgb(0,48,96)">setJdbcDriver</span>(<u><span style="color:rgb(64,0,0)">jdbcDriver</span></u>)<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">processEngineConfiguration.setJdbcPassword</span>(<u><span style="color:rgb(64,0,0)">jdbcPassword</span></u>)<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="font-size:14px"><u>processEngineConfiguration</u><span style="color:rgb(64,0,0)">.setJdbcUrl</span>(<u><span style="color:rgb(64,0,0)">jdbcUrl</span></u>)<span style="color:rgb(64,0,0)">;</span></span></p>
+        <p><span style="font-size:14px"><span style="color:rgb(64,0,0)">processEngineConfiguration.setJdbcUsername</span>(<u><span style="color:rgb(64,0,0)">jdbcUsername</span>)</u></span></p>
+        <p><em><span style="color:rgb(255,0,255)"><span style="font-size:14px">&nbsp;</span></span></em></p>
+        <p><span style="font-size:14px">上面提到的引擎初始化完毕会调用configure()<span style="font-family:宋体">中的方法，所以这里可以自定义实现的功能即可。</span></span></p>
+        <p><span style="font-family:宋体"><br>
+</span></p>
+
+    </div>
+
+
+
+
+        <!-- Baidu Button BEGIN -->
+
+
+
+
+        <div class="bdsharebuttonbox tracking-ad bdshare-button-style0-16" style="float: right;" data-mod="popu_172" data-bd-bind="1502544573922">
+            <a href="#" class="bds_more" data-cmd="more" style="background-position:0 0 !important; background-image: url(http://bdimg.share.baidu.com/static/api/img/share/icons_0_16.png?v=d754dcc0.png) !important" target="_blank"></a>
+            <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间" style="background-position:0 -52px !important" target="_blank"></a>
+            <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博" style="background-position:0 -104px !important" target="_blank"></a>
+            <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博" style="background-position:0 -260px !important" target="_blank"></a>
+            <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网" style="background-position:0 -208px !important" target="_blank"></a>
+            <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信" style="background-position:0 -1612px !important" target="_blank"></a>
+        </div>
+        <!-- Baidu Button END -->
+
+
+        <div id="digg" articleid="51170011">
+            <dl id="btnDigg" class="digg digg_enable" onclick="btndigga();">
+
+                <dt>顶</dt>
+                <dd>11</dd>
+            </dl>
+
+
+            <dl id="btnBury" class="digg digg_enable" onclick="btnburya();">
+
+                <dt>踩</dt>
+                <dd>0</dd>
+            </dl>
+
+        </div>
+        <div class="tracking-ad" data-mod="popu_222"><a href="javascript:void(0);" target="_blank">&nbsp;</a>   </div>
+        <div class="tracking-ad" data-mod="popu_223"> <a href="javascript:void(0);" target="_blank">&nbsp;</a></div>
+
+        <ul class="article_next_prev">
+            <li class="prev_article"><span onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_shangyipian']);location.href='http://blog.csdn.net/qq_30739519/article/details/51166993';">上一篇</span><a href="http://blog.csdn.net/qq_30739519/article/details/51166993" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_shangyipian'])">Activiti 流程部署方式 activi 动态部署（高级源码篇）</a></li>
+            <li class="next_article"><span onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_xiayipian']);location.href='http://blog.csdn.net/qq_30739519/article/details/51171683';">下一篇</span><a href="http://blog.csdn.net/qq_30739519/article/details/51171683" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_xiayipian'])">Juel 表达式使用</a></li>
+        </ul>
+
+        <div style="clear:both; height:10px;"></div>
+
+
+        <div class="similar_article">
+            <h4></h4>
+            <div class="similar_c" style="margin:20px 0px 0px 0px">
+                <div class="similar_c_t">
+                    &nbsp;&nbsp;相关文章推荐
+                </div>
+
+                <div class="similar_wrap tracking-ad" data-mod="popu_36">
+                    <ul class="similar_list fl">
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/caoyue_new/article/details/52180539" title="Activiti 个人任务（三种指派方式）" strategy="BlogCommendFromBaidu" target="_blank">Activiti 个人任务（三种指派方式）</a>
+                        </li>
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/wei763328075qq/article/details/51596621" title="Activiti — 动态任务分配" strategy="BlogCommendFromBaidu" target="_blank">Activiti — 动态任务分配</a>
+                        </li>
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/qq_30739519/article/details/51225067" title="activiti 任务节点 处理人设置" strategy="BlogCommendFromBaidu" target="_blank">activiti 任务节点 处理人设置</a>
+                        </li>
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/qq_30739519/article/details/51174136" title="activiti 配置节点 连线信息获取" strategy="BlogCommendFromBaidu" target="_blank">activiti 配置节点 连线信息获取</a>
+                        </li>
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/qq_30739519/article/details/51166163" title="Centos6.5 mysql安装" strategy="BlogCommendFromBaidu" target="_blank">Centos6.5 mysql安装</a>
+                        </li>
+                    </ul>
+                    <ul class="similar_list fr">
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/qq_30739519/article/details/51239818" title="activiti 多实例任务" strategy="BlogCommendFromBaidu" target="_blank">activiti 多实例任务</a>
+                        </li>
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/qq_30739519/article/details/74932573" title="Activiti权威指南 书重磅来袭，工作流开发者的福音" strategy="BlogCommendFromBaidu" target="_blank">Activiti权威指南 书重磅来袭，工作流开发者的福音</a>
+                        </li>
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/u012954390/article/details/51251155" title="activiti流程图动态创建" strategy="BlogCommendFromBaidu" target="_blank">activiti流程图动态创建</a>
+                        </li>
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/qq_30739519/article/details/51166993" title="Activiti 流程部署方式 activi 动态部署（高级源码篇）" strategy="BlogCommendFromBaidu" target="_blank">Activiti 流程部署方式 activi 动态部署（高级源码篇）</a>
+                        </li>
+                        <li>
+                            <em>•</em>
+                            <a href="http://blog.csdn.net/u010077237/article/details/42599155" title="Activiti学习入门（3） -- 学习启动流程实例" strategy="BlogCommendFromBaidu" target="_blank">Activiti学习入门（3） -- 学习启动流程实例</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>

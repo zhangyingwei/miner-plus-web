@@ -1,0 +1,47 @@
+@import "csdn_css.css";
+
+body{
+    background-color: rgb(231, 229, 225);
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.miner_main {
+}
+
+.miner_main .miner_body{
+    background-color: #fff;
+    width: 800px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 3px ;
+    border: 1px solid #cccccc;
+}
+
+.miner_main .miner_head {
+    height: 70px;
+    width: 860px;
+    margin:0 auto;
+    padding: 0px;
+    font-size: 13px;
+}
+
+.miner_main .miner_head ul{
+    list-style:  none;
+    line-height: 70px;
+    padding:0;
+    margin:0;
+}
+
+.miner_main .miner_head li {
+    float: left;
+    padding-right: 30px;
+}
+
+.miner_body h1 {
+    font-size: 20px !important;
+}
+
+.miner_main .miner_foot {
+    height: 70px;
+}
