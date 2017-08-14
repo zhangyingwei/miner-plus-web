@@ -7,6 +7,9 @@
     <link rel="stylesheet" type="text/css" href="css/main.css">
     <script type="application/javascript" src="http://util.zhangyingwei.com/js/jquery.min.js"></script>
     <script type="application/javascript" src="dist/kube/js/kube.min.js"></script>
+    <script type="application/javascript" src="dist/layer/layer.js"></script>
+    <script type="application/javascript" src="dist/is/is.js"></script>
+    <script type="application/javascript" src="js/main.js"></script>
 </head>
 <body>
 <div class="miner-main-container ">
@@ -17,77 +20,14 @@
         <div class="row">
             <div class="col col-7 left">
                 <div class="container text-center">
-                    <h5>昨日资源汇总</h5>
+                    <h5>今日资源汇总</h5>
                 </div>
                 <div>
                     <ul class="no-style">
-                        <li>
+                        <li th:each="content : ${contents}">
                             <div class="item">
-                                <label class="item-title"><a href="#">从零构建 TCP/IP 协议</a></label>
+                                <label class="item-title"><a href="#" th:text="${content.}">从零构建 TCP/IP 协议</a></label>
                                 <span class="meta-label">来源: github.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="item">
-                                <label class="item-title"><a href="#">小型 Web 页项目打包优化方案</a></label>
-                                <span class="meta-label">来源: mp.weixin.qq.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="item">
-                                <label class="item-title"><a href="#">游戏是什么？关于游戏本体论的探索</a></label>
-                                <span class="meta-label">来源: blog.zhangyingwei.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="item">
-                                <label class="item-title"><a href="#">机器学习系列特征工程：降维</a></label>
-                                <span class="meta-label">来源: blog.zhangyingwei.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="item">
-                                <label class="item-title"><a href="#">浅析 Bigtable 和 LevelDB 的实现</a></label>
-                                <span class="meta-label">来源: blog.zhangyingwei.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="item">
-                                <label class="item-title"><a href="#">多场景业务建模系统</a></label>
-                                <span class="meta-label">来源: blog.zhangyingwei.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="item">
-                                <label class="item-title"><a href="#">利用 std/esm 在 Node.js 开发中使用 ES Modules</a></label>
-                                <span class="meta-label">来源: blog.zhangyingwei.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="item">
-                                <label class="item-title"><a href="#">Yii2 框架学习笔记：基础抽象</a></label>
-                                <span class="meta-label">来源: blog.zhangyingwei.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="item">
-                                <label class="item-title"><a href="#">[译] Google 内部流传的反多样性文章</a></label>
-                                <span class="meta-label">来源: blog.zhangyingwei.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="item">
-                                <label class="item-title"><a href="#">从源码层解析 ContentService 如何实现数据变化监听</a></label>
-                                <span class="meta-label">来源: blog.zhangyingwei.com</span>
                                 <span class="meta-label">发表时间: 2017-01-01</span>
                             </div>
                         </li>
@@ -105,9 +45,11 @@
                         <p>
                     </div>
                     <div class="box container">
-                        <span>邮箱: zhangyw001@gmail.com</span>
+                        <span>邮箱: <a href="mailto:zhangyw001@gmail.com" class="label">zhangyw001@gmail.com</a></a>
                         <br>
-                        <span>微信: <del>犹豫要不要公布</del></span>
+                            <span>微信: <a href="#" class="label"><del>犹豫要不要公布</del></a></span>
+                        <br>
+                        <span>微博: <a class="label" href="http://weibo.com/zyw8866">专业喝咖啡</a></span>
                     </div>
                     <div class="container">
                         <nav class="tabs" data-component="tabs" data-equals="true">
@@ -118,17 +60,25 @@
                         </nav>
                         <div id="tab1">
                             <div class="form-item">
+                                <div class="message focus" data-component="message">订阅成功之后，您将会在每日早上收到我们的最新资源推送哦。<span class="close small"></span></div>
                                 <div class="append">
-                                    <input placeholder="请输入邮箱" type="email">
-                                    <button class="button red">订阅</button>
+                                    <input placeholder="请输入邮箱" type="email" required="required" autofocus="autofocus" name="email" id="email">
+                                    <button class="button red" id="emailBut">订阅</button>
                                 </div>
+                            </div>
+                            <div class="topic-labels">
+                                <a style="cursor: pointer" class="label outline success">java</a>
+                                <a style="cursor: pointer" class="label outline success">python</a>
+                                <a style="cursor: pointer" class="label outline success">scala</a>
+                                <a style="cursor: pointer" class="label outline success">数据分析</a>
                             </div>
                         </div>
                         <div id="tab2">
                             <div class="form-item">
+                                <div class="message focus" data-component="message">您可以提交资源网站(<b>网址</b>, <b>rss地址</b> 等)，通过审核通过后，您所提交的资源网站的更新将有机会出现在每日资源中哦！<span class="close small"></span></div>
                                 <div class="append">
-                                    <input placeholder="请输入网址" type="text">
-                                    <button class="button red">提交</button>
+                                    <input placeholder="请输入网址" type="url" required="required" autofocus="autofocus" name="url" id="url">
+                                    <button class="button red" id="urlBut">提交</button>
                                 </div>
                             </div>
                         </div>

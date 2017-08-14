@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="/dist/kube/css/kube.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+    <meta charset="UTF-8">
+    <title>Miner - 订阅</title>
+</head>
+<body>
+<div class="miner-main-container">
+    <div class="miner-title text-center">
+        <h3>Miner 也许是<red>国内外第二烂</red>的内容订阅服务</h3>
+    </div>
+    <div class="box">
+        <div class="show text-center container">
+            <div th:if="${code == 200}">恭喜你，订阅成功了</div>
+            <div th:if="${code == 400}">不好意思，你的请求过期了</div>
+        </div>
+        <div class="text-center small container"><span id="num" class="label badge success">10</span>秒之后，窗口即将跳转</div>
+    </div>
+</div>
+<script>
+    var num = 10;
+    setInterval(function () {
+        document.getElementById("num").innerText = num--;
+        if(num === 0){
+            window.location.href="/main";
+        }
+    }, 1000);
+</script>
+</body>
+</html>
