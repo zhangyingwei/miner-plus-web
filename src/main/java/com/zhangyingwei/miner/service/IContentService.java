@@ -10,4 +10,6 @@ import java.util.List;
  */
 public interface IContentService {
     List<Content> listContentsToDay() throws MinerException;
+    List<Content> listContentsToDayTop10() throws MinerException;
 }
+

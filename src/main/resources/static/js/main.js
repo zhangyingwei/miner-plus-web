@@ -46,7 +46,7 @@ $(function () {
                 success: function (data) {
                     layer.close(index);
                     if(data.code == 200){
-                        layer.msg("订阅成功，你将在每天早上8点钟左右不准时收到邮件！！！");
+                        layer.msg("订阅成功，请登录邮箱进行验证！！！");
                     }else{
                         layer.msg(data.message);
                     }

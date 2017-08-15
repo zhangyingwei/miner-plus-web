@@ -5,6 +5,8 @@ import com.zhangyingwei.miner.exception.MinerException;
 import com.zhangyingwei.miner.mapper.SubscribeMapper;
 import com.zhangyingwei.miner.model.Subscribe;
 import com.zhangyingwei.miner.utils.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,8 @@ public class SubscribeService implements ISubscribeService{
     private SubscribeMapper subscribeMapper;
     @Autowired
     private EmailQueue emailQueue;
+    private Logger logger = LoggerFactory.getLogger(SubscribeService.class);
+
     @Override
     public void adSubscribe(Subscribe subscribe) throws MinerException {
         try {
@@ -26,11 +30,13 @@ public class SubscribeService implements ISubscribeService{
                 subscribe.setFlag(Subscribe.FLAG_INIT);
                 this.subscribeMapper.addSubscribe(subscribe);
                 emailQueue.push(subscribe.getEmail());
+                logger.info(subscribe.getEmail() + "已经入队");
             }else {
                 if (old.getFlag() == Subscribe.FLAG_INIT) {
                     throw new MinerException("您已经订阅过啦！");
                 } else {
-                    this.subscribeMapper.updateFlagByEmail(old.getEmail(),Subscribe.FLAG_INIT);
+                    subscribe.setFlag(Subscribe.FLAG_NOTICE);
+                    this.subscribeMapper.updateByEmail(subscribe);
                     emailQueue.push(old.getEmail());
                 }
             }
@@ -43,6 +49,15 @@ public class SubscribeService implements ISubscribeService{
     public void markAsValid(String email) throws MinerException {
         try {
             this.subscribeMapper.updateFlagByEmail(email, Subscribe.FLAG_NOTICE);
+        } catch (Exception e) {
+            throw new MinerException(e);
+        }
+    }
+
+    @Override
+    public void markAsChecked(String email) throws MinerException {
+        try {
+            this.subscribeMapper.updateFlagByEmail(email, Subscribe.FLAG_CKECKED);
         } catch (Exception e) {
             throw new MinerException(e);
         }

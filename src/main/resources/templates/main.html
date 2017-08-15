@@ -26,9 +26,10 @@
                     <ul class="no-style">
                         <li th:each="content : ${contents}">
                             <div class="item">
-                                <label class="item-title"><a href="#" th:text="${content.}">从零构建 TCP/IP 协议</a></label>
-                                <span class="meta-label">来源: github.com</span>
-                                <span class="meta-label">发表时间: 2017-01-01</span>
+                                <label class="item-title"><a href="@{content.url}" th:text="${content.title}">从零构建 TCP/IP 协议</a></label>
+                                <span class="meta-label">来源: <a href="@{content.site}" th:text="${content.sitename}">github.com</a></span>
+                                <span class="meta-label">发表时间: <span th:text="${content.pubdate}">2017-01-01</span></span>
+                                <span class="label badge success" th:text="${content.topic}">java</span>
                             </div>
                         </li>
                     </ul>

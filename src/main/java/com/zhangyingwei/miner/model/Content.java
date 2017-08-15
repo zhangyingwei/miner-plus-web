@@ -8,6 +8,8 @@ import org.springframework.validation.annotation.Validated;
  */
 public class Content {
     private Integer id;
+    private String author;
+    private String sitename;
     private String site;
     private String url;
     private String title;
@@ -80,12 +82,31 @@ public class Content {
         this.topic = topic;
     }
 
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getSitename() {
+        return sitename;
+    }
+
+    public void setSitename(String sitename) {
+        this.sitename = sitename;
+    }
+
     @Override
     public String toString() {
         return "Content{" +
                 "id=" + id +
+                ", author='" + author + '\'' +
+                ", sitename='" + sitename + '\'' +
                 ", site='" + site + '\'' +
                 ", url='" + url + '\'' +
+                ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", pubdate='" + pubdate + '\'' +
                 ", getdate='" + getdate + '\'' +

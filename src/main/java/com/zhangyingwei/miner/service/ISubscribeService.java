@@ -10,4 +10,6 @@ public interface ISubscribeService {
     void adSubscribe(Subscribe subscribe) throws MinerException;
 
     void markAsValid(String email) throws MinerException;
+
+    void markAsChecked(String email) throws MinerException;
 }

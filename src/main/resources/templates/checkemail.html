@@ -13,8 +13,8 @@
     </div>
     <div class="box">
         <div class="show text-center container">
-            <div th:if="${code == 200}">恭喜你，订阅成功了</div>
-            <div th:if="${code == 400}">不好意思，你的请求过期了</div>
+            <div th:if="${code == 200}">恭喜你，订阅成功了，您将在每天早上收到推送邮件，如有任何问题，欢迎联系我 zhangyw001@gmail.com</div>
+            <div th:if="${code == 400}">不好意思，你的请求过期了，请重新订阅。</div>
         </div>
         <div class="text-center small container"><span id="num" class="label badge success">10</span>秒之后，窗口即将跳转</div>
     </div>
@@ -24,7 +24,7 @@
     setInterval(function () {
         document.getElementById("num").innerText = num--;
         if(num === 0){
-            window.location.href="/main";
+            window.location.href="/";
         }
     }, 1000);
 </script>

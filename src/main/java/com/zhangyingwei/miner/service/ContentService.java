@@ -28,4 +28,15 @@ public class ContentService implements IContentService {
             throw new MinerException(e);
         }
     }
+
+    @Override
+    public List<Content> listContentsToDayTop10() throws MinerException {
+        String toDay = DateUtils.getCurrentDate();
+        toDay += "%";
+        try {
+            return this.contentMapper.listContentsByGetDateLimit(toDay,10);
+        } catch (Exception e) {
+            throw new MinerException(e);
+        }
+    }
 }

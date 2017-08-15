@@ -5,6 +5,7 @@ import com.zhangyingwei.miner.controller.result.Result;
 import com.zhangyingwei.miner.exception.MinerException;
 import com.zhangyingwei.miner.model.Subscribe;
 import com.zhangyingwei.miner.service.ISubscribeService;
+import com.zhangyingwei.miner.service.SubscribeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ import java.util.UUID;
 public class SubscribeController {
 
     @Autowired
-    private ISubscribeService subscribeService;
+    private SubscribeService subscribeService;
 
     @PostMapping("subscribe")
     @ResponseBody
@@ -31,13 +32,14 @@ public class SubscribeController {
     }
 
     @GetMapping("subscribe/check/{email}/{id}")
-    public String check(@PathVariable("email") String email,@PathVariable("id") String id,Map model){
+    public String check(@PathVariable("email") String email,@PathVariable("id") String id,Map model) throws MinerException {
         MinerCache.put(email, UUID.randomUUID().toString());
         String oid = MinerCache.get(email);
         if(oid == null){
             model.put("code", 400);
             model.put("message", "过期");
         }else{
+            this.subscribeService.markAsChecked(email);
             model.put("code", 200);
             model.put("message", "成功");
         }

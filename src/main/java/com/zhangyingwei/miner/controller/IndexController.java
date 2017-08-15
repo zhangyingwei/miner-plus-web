@@ -26,17 +26,17 @@ public class IndexController {
     @Autowired
     private ContentService contentService;
 
-    @GetMapping
-    public String index(Map<String,Object> model) throws IOException {
-        String path = "src/main/resources/templates/content.html";
-        String content = FileUtils.read(path);
-        model.put("html", HtmlFormater.csdnHtmlFormate(content));
-        return "index";
-    }
+//    @GetMapping
+//    public String index(Map<String,Object> model) throws IOException {
+//        String path = "src/main/resources/templates/content.html";
+//        String content = FileUtils.read(path);
+//        model.put("html", HtmlFormater.csdnHtmlFormate(content));
+//        return "index";
+//    }
 
-    @GetMapping("main")
+    @GetMapping
     public String main(Map<String,Object> model) throws MinerException {
-        List<Content> contents = this.contentService.listContentsToDay();
+        List<Content> contents = this.contentService.listContentsToDayTop10();
         model.put("contents", contents);
         return "main";
     }

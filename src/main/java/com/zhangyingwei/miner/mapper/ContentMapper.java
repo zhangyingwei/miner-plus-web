@@ -13,6 +13,9 @@ import java.util.List;
 @Mapper
 public interface ContentMapper {
 
-    @Select("select * from mp_content where getdate like #{getdate}")
+    @Select("select * from mp_content where getdate like #{getdate} order by getdate")
     List<Content> listContentsByGetDate(@Param("getdate") String getDate) throws Exception;
+
+    @Select("select * from mp_content where getdate like #{getdate} order by getdate limit #{limit}")
+    List<Content> listContentsByGetDateLimit(@Param("getdate") String toDay, @Param("limit") int limit);
 }
