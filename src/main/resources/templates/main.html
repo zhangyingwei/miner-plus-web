@@ -26,8 +26,8 @@
                     <ul class="no-style">
                         <li th:each="content : ${contents}">
                             <div class="item">
-                                <label class="item-title"><a href="@{content.url}" th:text="${content.title}">从零构建 TCP/IP 协议</a></label>
-                                <span class="meta-label">来源: <a href="@{content.site}" th:text="${content.sitename}">github.com</a></span>
+                                <label class="item-title"><a target="_blank" href="#" th:href="@{${content.url}}" th:text="${content.title}">从零构建 TCP/IP 协议</a></label>
+                                <span class="meta-label">来源: <a target="_blank" href="#" th:href="@{${content.site}}" th:text="${content.sitename}">github.com</a></span>
                                 <span class="meta-label">发表时间: <span th:text="${content.pubdate}">2017-01-01</span></span>
                                 <span class="label badge success" th:text="${content.topic}">java</span>
                             </div>
@@ -68,10 +68,7 @@
                                 </div>
                             </div>
                             <div class="topic-labels">
-                                <a style="cursor: pointer" class="label outline success">java</a>
-                                <a style="cursor: pointer" class="label outline success">python</a>
-                                <a style="cursor: pointer" class="label outline success">scala</a>
-                                <a style="cursor: pointer" class="label outline success">数据分析</a>
+                                <a th:each="topic : ${topics}" style="cursor: pointer" class="label outline success"><span th:text="${topic}">scala</span></a>
                             </div>
                         </div>
                         <div id="tab2">
@@ -91,7 +88,7 @@
     <div class="text-center footer">
         <footer>
             <section>Miner © 2017-08-13</section>
-            <section>Powered by <a href="https://zhangyingwei.com">zhangyw</a></section>
+            <section>Powered by <a href="http://zhangyingwei.com">zhangyw</a></section>
         </footer>
     </div>
 </div>

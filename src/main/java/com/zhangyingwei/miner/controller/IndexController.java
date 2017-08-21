@@ -10,8 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author: zhangyw
@@ -36,8 +38,10 @@ public class IndexController {
 
     @GetMapping
     public String main(Map<String,Object> model) throws MinerException {
-        List<Content> contents = this.contentService.listContentsToDayTop10();
+        List<Content> contents = this.contentService.listNomalContentsToDayTop10();
+        List<String> topics = this.contentService.listTopics();
         model.put("contents", contents);
+        model.put("topics", Optional.ofNullable(topics).orElse(new ArrayList<String>()));
         return "main";
     }
 }

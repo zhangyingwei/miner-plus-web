@@ -7,6 +7,11 @@ import org.springframework.validation.annotation.Validated;
  * Created by zhangyw on 2017/8/14.
  */
 public class Content {
+    public static final Integer STATE_INIT = 0;
+    public static final Integer STATE_NOMAL = 1;
+    public static final Integer STATE_INVALID = 2;
+    public static final Integer STATE_DEL = 9;
+
     private Integer id;
     private String author;
     private String sitename;
@@ -17,6 +22,7 @@ public class Content {
     private String pubdate;
     private String getdate;
     private String topic;
+    private Integer state;
 
     public Integer getId() {
         return id;
@@ -96,6 +102,14 @@ public class Content {
 
     public void setSitename(String sitename) {
         this.sitename = sitename;
+    }
+
+    public Integer getState() {
+        return state;
+    }
+
+    public void setState(Integer state) {
+        this.state = state;
     }
 
     @Override

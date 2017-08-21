@@ -11,5 +11,8 @@ import java.util.List;
 public interface IContentService {
     List<Content> listContentsToDay() throws MinerException;
     List<Content> listContentsToDayTop10() throws MinerException;
+    List<Content> listNomalContentsToDay() throws MinerException;
+    List<Content> listNomalContentsToDayTop10() throws MinerException;
+    List<String> listTopics() throws MinerException;
 }
 

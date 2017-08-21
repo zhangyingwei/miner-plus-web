@@ -39,4 +39,35 @@ public class ContentService implements IContentService {
             throw new MinerException(e);
         }
     }
+
+    @Override
+    public List<Content> listNomalContentsToDay() throws MinerException {
+        String toDay = DateUtils.getCurrentDate();
+        toDay += "%";
+        try {
+            return this.contentMapper.listContentsByGetDateAndState(toDay,Content.STATE_NOMAL);
+        } catch (Exception e) {
+            throw new MinerException(e);
+        }
+    }
+
+    @Override
+    public List<Content> listNomalContentsToDayTop10() throws MinerException {
+        String toDay = DateUtils.getCurrentDate();
+        toDay += "%";
+        try {
+            return this.contentMapper.listContentsByGetDateAndStateLimit(toDay,10,Content.STATE_NOMAL);
+        } catch (Exception e) {
+            throw new MinerException(e);
+        }
+    }
+
+    @Override
+    public List<String> listTopics() throws MinerException {
+        try {
+            return this.contentMapper.listTopics();
+        } catch (Exception e) {
+            throw new MinerException(e);
+        }
+    }
 }
