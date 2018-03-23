@@ -72,3 +72,14 @@ red {
     font-size:10px;
     padding: 10px 0;
 }
+.comment{
+    font-size: 15px;
+    font-weight: bold;
+    color: #a5a5a5;
+}
+.comment .title{
+    float: left;
+    font-size: 15px;
+    font-weight: bold;
+    color: #a5a5a5;
+}

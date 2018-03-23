@@ -3,6 +3,7 @@ package com.zhangyingwei.miner.service;
 import com.zhangyingwei.miner.exception.MinerException;
 import com.zhangyingwei.miner.mapper.ContentMapper;
 import com.zhangyingwei.miner.model.Content;
+import com.zhangyingwei.miner.model.Topic;
 import com.zhangyingwei.miner.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,16 +57,21 @@ public class ContentService implements IContentService {
         String toDay = DateUtils.getCurrentDate();
         toDay += "%";
         try {
-            return this.contentMapper.listContentsByGetDateAndStateLimit(toDay,10,Content.STATE_NOMAL);
+            List<Content> contents = this.contentMapper.listContentsByPushDateAndStateLimit(toDay, 10, Content.STATE_PASS);
+            for (Content content : contents) {
+                content.setGetdate(DateUtils.formateDatetimeAsDate(content.getGetdate()));
+                content.setPubdate(DateUtils.formateDatetimeAsDate(content.getPubdate()));
+            }
+            return contents;
         } catch (Exception e) {
             throw new MinerException(e);
         }
     }
 
     @Override
-    public List<String> listTopics() throws MinerException {
+    public List<Topic> listTopics() throws MinerException {
         try {
-            return this.contentMapper.listTopics();
+            return this.contentMapper.listTopicsByState(Topic.FLAG_NOMAL);
         } catch (Exception e) {
             throw new MinerException(e);
         }

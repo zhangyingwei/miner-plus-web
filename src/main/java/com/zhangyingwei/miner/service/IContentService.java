@@ -2,6 +2,7 @@ package com.zhangyingwei.miner.service;
 
 import com.zhangyingwei.miner.exception.MinerException;
 import com.zhangyingwei.miner.model.Content;
+import com.zhangyingwei.miner.model.Topic;
 
 import java.util.List;
 
@@ -13,6 +14,6 @@ public interface IContentService {
     List<Content> listContentsToDayTop10() throws MinerException;
     List<Content> listNomalContentsToDay() throws MinerException;
     List<Content> listNomalContentsToDayTop10() throws MinerException;
-    List<String> listTopics() throws MinerException;
+    List<Topic> listTopics() throws MinerException;
 }
 

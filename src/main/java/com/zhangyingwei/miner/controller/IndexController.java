@@ -2,6 +2,7 @@ package com.zhangyingwei.miner.controller;
 
 import com.zhangyingwei.miner.exception.MinerException;
 import com.zhangyingwei.miner.model.Content;
+import com.zhangyingwei.miner.model.Topic;
 import com.zhangyingwei.miner.service.ContentService;
 import com.zhangyingwei.miner.utils.FileUtils;
 import com.zhangyingwei.miner.utils.HtmlFormater;
@@ -39,9 +40,9 @@ public class IndexController {
     @GetMapping
     public String main(Map<String,Object> model) throws MinerException {
         List<Content> contents = this.contentService.listNomalContentsToDayTop10();
-        List<String> topics = this.contentService.listTopics();
+        List<Topic> topics = this.contentService.listTopics();
         model.put("contents", contents);
-        model.put("topics", Optional.ofNullable(topics).orElse(new ArrayList<String>()));
+        model.put("topics", Optional.ofNullable(topics).orElse(new ArrayList<Topic>()));
         return "main";
     }
 }

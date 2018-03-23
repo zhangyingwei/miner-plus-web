@@ -27,9 +27,15 @@
                         <li th:each="content : ${contents}">
                             <div class="item">
                                 <label class="item-title"><a target="_blank" href="#" th:href="@{${content.url}}" th:text="${content.title}">从零构建 TCP/IP 协议</a></label>
+                                <div class="comment">
+                                    <label class="title">简评:&nbsp;</label>
+                                    <p th:text="${content.comment}">
+                                        这里是一些简评，主要是如果我看到文章有些意思的话，会写一些自己的见解，无关乎对错，无关乎立场
+                                    </p>
+                                </div>
                                 <span class="meta-label">来源: <a target="_blank" href="#" th:href="@{${content.site}}" th:text="${content.sitename}">github.com</a></span>
                                 <span class="meta-label">发表时间: <span th:text="${content.pubdate}">2017-01-01</span></span>
-                                <span class="label badge success" th:text="${content.topic}">java</span>
+                                <span class="label badge success" th:each="topic : ${content.topics}" th:text="${topic}">java</span>
                             </div>
                         </li>
                     </ul>
@@ -46,7 +52,7 @@
                         <p>
                     </div>
                     <div class="box container">
-                        <span>邮箱: <a href="mailto:zhangyw001@gmail.com" class="label">zhangyw001@gmail.com</a></a>
+                        <span>邮箱: <a href="mailto:zhangyw001.miner@gmail.com" class="label">zhangyw001.miner@gmail.com</a></a>
                         <br>
                             <span>微信: <a href="#" class="label"><del>犹豫要不要公布</del></a></span>
                         <br>
@@ -68,7 +74,7 @@
                                 </div>
                             </div>
                             <div class="topic-labels">
-                                <a th:each="topic : ${topics}" style="cursor: pointer" class="label outline success"><span th:text="${topic}">scala</span></a>
+                                <a th:each="topic : ${topics}" style="cursor: pointer" class="label outline success"><span th:attr="topic-id=${topic.id}" th:text="${topic.topic}">scala</span></a>
                             </div>
                         </div>
                         <div id="tab2">
