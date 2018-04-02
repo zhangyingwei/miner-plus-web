@@ -59,4 +59,13 @@ public class ResourcesService implements IResourcesService {
             throw new MinerException(e.getLocalizedMessage());
         }
     }
+
+    @Override
+    public void removeResourcesByState(String id) throws MinerException {
+        try {
+            this.resourcesMapper.updateStateById(id,Resources.FLAG_DEL);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
+    }
 }

@@ -9,10 +9,7 @@ import com.zhangyingwei.miner.service.ResourcesService;
 import com.zhangyingwei.miner.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -46,5 +43,12 @@ public class ResourcesController {
         result.put("data", resources);
         result.put("page", pageInfo);
         return Result.succes(result);
+    }
+
+    @DeleteMapping("/api/resources/{id}")
+    @ResponseBody
+    public Map removeById(@PathVariable("id") String id) throws MinerException {
+        this.resourcesService.removeResourcesByState(id);
+        return Result.success();
     }
 }

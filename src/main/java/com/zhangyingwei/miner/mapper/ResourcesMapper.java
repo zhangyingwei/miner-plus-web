@@ -28,6 +28,9 @@ public interface ResourcesMapper {
     @Select("select * from mp_resources where resources=#{resources}")
     Resources selectBySite(String site) throws Exception;
 
+    @Update("update mp_resources set flag=#{flag} where id=#{id}")
+    void updateStateById(@Param("id") String id,@Param("flag") Integer flag) throws Exception;
+
     class ResourcesProvider {
         public String listResourcesWithPageAndParam(@Param("page") PageInfo pageInfo,@Param("res") Resources resources) {
             StringBuffer sql = new StringBuffer("select * from mp_resources where 1=1 and");
