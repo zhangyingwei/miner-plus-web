@@ -1,5 +1,6 @@
 package com.zhangyingwei.miner.utils;
 
+import com.zhangyingwei.miner.model.ResRule;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -16,15 +17,11 @@ import static org.junit.Assert.*;
 public class WebUtilsTest {
     @Test
     public void select() throws Exception {
-        String url = "https://www.barretlee.com/entry/";
-        List<String> rules = new ArrayList<String>() {
-            {
-                add(".entry-recent-posts");
-                add("ul");
-                add("li");
-                add("a");
-            }
-        };
+        String url = "https://www.barretlee.com/blog/archives/";
+        ResRule rules = new ResRule();
+        rules.setRule("div.cate-detail.response-overflow@ul> li > a");
+//        rules.setAttr("href");
+//        rules.setPrefix("https://www.barretlee.com");
         List<String> res = WebUtils.select(url, rules);
         res.stream().forEach(line -> {
             System.out.println(line);

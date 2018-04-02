@@ -1,5 +1,6 @@
 package com.zhangyingwei.miner.service;
 
+import com.zhangyingwei.miner.controller.result.PageInfo;
 import com.zhangyingwei.miner.exception.MinerException;
 import com.zhangyingwei.miner.mapper.ResourcesMapper;
 import com.zhangyingwei.miner.model.Resources;
@@ -44,6 +45,18 @@ public class ResourcesService implements IResourcesService {
             }
         } catch (Exception e) {
             throw new MinerException(e);
+        }
+    }
+
+    @Override
+    public List<Resources> listResourcesWithPageAndFlag(PageInfo pageInfo, Integer flag) throws MinerException {
+        try {
+            Resources resources = new Resources();
+            resources.setFlag(flag);
+            pageInfo.setTotal(this.resourcesMapper.total(pageInfo,resources));
+            return this.resourcesMapper.listResourcesWithPageAndParam(pageInfo,resources);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
         }
     }
 }

@@ -1,8 +1,14 @@
 package com.zhangyingwei.miner.model;
 
+import com.zhangyingwei.miner.common.MinerEnum;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author: zhangyw
@@ -19,4 +25,7 @@ public class ResRule {
     private String prefix;
     private String suffix;
     private String attr;
+    public List<String> bulidRules(){
+        return Arrays.stream(rule.split(MinerEnum.RULE_SPLITER.getValue())).collect(Collectors.toList());
+    }
 }
