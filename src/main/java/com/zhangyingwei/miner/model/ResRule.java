@@ -4,6 +4,7 @@ import com.zhangyingwei.miner.common.MinerEnum;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +26,13 @@ public class ResRule {
     private String prefix;
     private String suffix;
     private String attr;
+
+    private String url;
+    private String rtype;
     public List<String> bulidRules(){
         return Arrays.stream(rule.split(MinerEnum.RULE_SPLITER.getValue())).collect(Collectors.toList());
+    }
+    public Boolean isEmpty() {
+        return StringUtils.isBlank(rule);
     }
 }

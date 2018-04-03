@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author: zhangyw
@@ -32,8 +33,27 @@ public class RuleController {
 
     @PostMapping
     @ResponseBody
-    public Map addRules(String id,@RequestParam Map params) {
-        System.out.println(params);
+    public Map addRules(String uuid,String id,@RequestParam Map params) throws MinerException {
+        ResRule title = this.bulidModel(params,id,"title");
+        ResRule url = this.bulidModel(params,id,"url");
+        ResRule desc = this.bulidModel(params,id,"desc");
+        ResRule pubdate = this.bulidModel(params,id,"pubdate");
+        try {
+            this.ruleService.addRules(uuid,title, url, desc, pubdate);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
         return Result.message("add rule success");
+    }
+
+    private ResRule bulidModel(Map params, String id,String key) {
+        ResRule rule = new ResRule();
+        rule.setRule(Optional.ofNullable(params.get(key.concat("[rule]"))).orElse("")+"");
+        rule.setPrefix(Optional.ofNullable(params.get(key.concat("[prefix]"))).orElse("")+"");
+        rule.setSuffix(Optional.ofNullable(params.get(key.concat("[suffix]"))).orElse("")+"");
+        rule.setAttr(Optional.ofNullable(params.get(key.concat("[attr]"))).orElse("")+"");
+        rule.setUrl(id);
+        rule.setRtype(key);
+        return rule;
     }
 }

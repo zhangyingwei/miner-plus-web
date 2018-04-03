@@ -1,5 +1,7 @@
 package com.zhangyingwei.miner.controller.result;
 
+import net.sf.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +14,7 @@ public class Result {
     private static final Integer CODE_SUCCESS = 200;
     private static final String MSG_SUCCESS = "success";
     private static final Integer CODE_ERROR = 9000;
+    private static final Integer CODE_NOLOGIN = 501;
     private static final String MSG_ERROR = "error";
 
     public static Map success(){
@@ -57,5 +60,9 @@ public class Result {
         resultMap.put("message", message);
     }
 
-
+    public static String nologin() {
+        code(CODE_NOLOGIN);
+        msg("no login");
+        return JSONObject.fromObject(resultMap).toString();
+    }
 }

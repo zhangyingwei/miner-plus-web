@@ -1,5 +1,6 @@
 package com.zhangyingwei.miner.controller;
 
+import com.zhangyingwei.miner.common.Auth;
 import com.zhangyingwei.miner.controller.result.PageInfo;
 import com.zhangyingwei.miner.controller.result.Result;
 import com.zhangyingwei.miner.exception.MinerException;
@@ -35,6 +36,7 @@ public class ResourcesController {
         return Result.success();
     }
 
+    @Auth
     @GetMapping("/api/resources/new")
     @ResponseBody
     public Map listInitResourcesWithPage(PageInfo pageInfo) throws MinerException {
@@ -45,10 +47,49 @@ public class ResourcesController {
         return Result.succes(result);
     }
 
+    @Auth
+    @GetMapping("/api/resources")
+    @ResponseBody
+    public Map listAllResourcesWithPage(PageInfo pageInfo) throws MinerException {
+        List<Resources> resources = this.resourcesService.listResourcesWithPage(pageInfo);
+        Map result = new HashMap();
+        result.put("data", resources);
+        result.put("page", pageInfo);
+        return Result.succes(result);
+    }
+
+    @Auth
+    @GetMapping("/api/resources/bad")
+    @ResponseBody
+    public Map listBadResourcesWithPage(PageInfo pageInfo) throws MinerException {
+        List<Resources> resources = this.resourcesService.listResourcesWithPageAndFlag(pageInfo,Resources.FLAG_UNUSED);
+        Map result = new HashMap();
+        result.put("data", resources);
+        result.put("page", pageInfo);
+        return Result.succes(result);
+    }
+
+    @Auth
     @DeleteMapping("/api/resources/{id}")
     @ResponseBody
     public Map removeById(@PathVariable("id") String id) throws MinerException {
         this.resourcesService.removeResourcesByState(id);
+        return Result.success();
+    }
+
+    @Auth
+    @PostMapping("/api/resources/bad/{id}")
+    @ResponseBody
+    public Map isBad(@PathVariable("id") String id) throws MinerException {
+        this.resourcesService.badResources(id);
+        return Result.success();
+    }
+
+    @Auth
+    @PostMapping("/api/resources/good/{id}")
+    @ResponseBody
+    public Map isGood(@PathVariable("id") String id) throws MinerException {
+        this.resourcesService.goodResources(id);
         return Result.success();
     }
 }

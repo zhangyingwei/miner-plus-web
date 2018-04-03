@@ -1,10 +1,10 @@
 package com.zhangyingwei.miner.mapper;
 
+import com.zhangyingwei.miner.controller.result.PageInfo;
 import com.zhangyingwei.miner.model.Content;
 import com.zhangyingwei.miner.model.Topic;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -28,4 +28,58 @@ public interface ContentMapper {
 
     @Select("select * from mp_topics where flag=#{flag}")
     List<Topic> listTopicsByState(@Param("flag") Integer flag) throws Exception;
+
+    @SelectProvider(type = ContentMapperProvider.class,method = "listContentsWithPageAndParamSql")
+    List<Content> listContentsWithPageAndParam(@Param("page") PageInfo pageInfo, @Param("content") Content content) throws Exception;
+
+    @SelectProvider(type = ContentMapperProvider.class,method = "total")
+    Integer total(@Param("content") Content content) throws Exception;
+
+    @UpdateProvider(type = ContentMapperProvider.class ,method = "updateById")
+    void updateById(@Param("id") String id, @Param("content") Content content) throws Exception;
+
+
+    class ContentMapperProvider {
+        public String listContentsWithPageAndParamSql(@Param("page") PageInfo pageInfo, @Param("content") Content content){
+            StringBuffer sql = new StringBuffer("select * from mp_content where 1=1 and");
+            if (null != content.getState()) {
+                sql.append(" state=#{content.state} and");
+            }
+            sql.delete(sql.length() - 3, sql.length());
+            sql.append(" order by pushdate,id limit #{page.start},#{page.pageSize}");
+            return sql.toString();
+        }
+
+        public String total(@Param("content") Content content){
+            StringBuffer sql = new StringBuffer("select count(*) from mp_content where 1=1 and");
+            if (null != content.getState()) {
+                sql.append(" state=#{content.state} and");
+            }
+            sql.delete(sql.length() - 3, sql.length());
+            return sql.toString();
+        }
+
+        public String updateById(@Param("id") String id, @Param("content") Content content) {
+            StringBuffer sql = new StringBuffer("update mp_content set");
+            Boolean has = false;
+            if (null != content.getState()) {
+                sql.append(" state=#{content.state},");
+                has = true;
+            }
+            if (StringUtils.isNotEmpty(content.getComment())) {
+                sql.append(" comment=#{content.comment},");
+                has = true;
+            }
+            if (StringUtils.isNotEmpty(content.getPushdate())) {
+                sql.append(" pushdate=#{content.pushdate},");
+                has = true;
+            }
+            sql.delete(sql.length() - 1, sql.length());
+            if (!has) {
+                sql.delete(sql.length() - 3, sql.length());
+            }
+            sql.append(" where id=#{id}");
+            return sql.toString();
+        }
+    }
 }

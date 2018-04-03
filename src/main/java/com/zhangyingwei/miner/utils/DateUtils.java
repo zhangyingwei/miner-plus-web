@@ -37,6 +37,10 @@ public class DateUtils {
         return getDateAfter(step, "yyyy-MM-dd");
     }
 
+    public static String getNextDate() {
+        return getDateAfter(60*60*24, "yyyy-MM-dd");
+    }
+
     public static String getDateAfter(int step, String format) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
         Calendar calendar = Calendar.getInstance();

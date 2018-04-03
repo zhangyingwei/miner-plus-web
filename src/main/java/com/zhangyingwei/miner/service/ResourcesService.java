@@ -61,9 +61,37 @@ public class ResourcesService implements IResourcesService {
     }
 
     @Override
+    public List<Resources> listResourcesWithPage(PageInfo pageInfo) throws MinerException {
+        try {
+            pageInfo.setTotal(this.resourcesMapper.total(pageInfo,new Resources()));
+            return this.resourcesMapper.listResourcesWithPageAndParam(pageInfo, new Resources());
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
     public void removeResourcesByState(String id) throws MinerException {
         try {
             this.resourcesMapper.updateStateById(id,Resources.FLAG_DEL);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public void badResources(String id) throws MinerException {
+        try {
+            this.resourcesMapper.updateStateById(id, Resources.FLAG_DEL);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public void goodResources(String id) throws MinerException {
+        try {
+            this.resourcesMapper.updateStateById(id, Resources.FLAG_NOMAL);
         } catch (Exception e) {
             throw new MinerException(e.getLocalizedMessage());
         }

@@ -1,5 +1,6 @@
 package com.zhangyingwei.miner.service;
 
+import com.zhangyingwei.miner.controller.result.PageInfo;
 import com.zhangyingwei.miner.exception.MinerException;
 import com.zhangyingwei.miner.mapper.ContentMapper;
 import com.zhangyingwei.miner.model.Content;
@@ -18,6 +19,16 @@ public class ContentService implements IContentService {
 
     @Autowired
     private ContentMapper contentMapper;
+
+    @Override
+    public List<Content> listContentsWithPageAndParram(PageInfo pageInfo, Content content) throws MinerException {
+        try {
+            pageInfo.setTotal(this.contentMapper.total(content));
+            return this.contentMapper.listContentsWithPageAndParam(pageInfo,content);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
+    }
 
     @Override
     public List<Content> listContentsToDay() throws MinerException {
@@ -74,6 +85,41 @@ public class ContentService implements IContentService {
             return this.contentMapper.listTopicsByState(Topic.FLAG_NOMAL);
         } catch (Exception e) {
             throw new MinerException(e);
+        }
+    }
+
+    @Override
+    public void readyToPush(String id, String comment) throws MinerException {
+        Content content = new Content();
+        content.setState(Content.STATE_PASS);
+        content.setComment(comment);
+//        content.setPushdate(DateUtils.getNextDate());
+        try {
+            this.contentMapper.updateById(id,content);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public void isRubbis(String id)  throws MinerException{
+        Content content = new Content();
+        content.setState(Content.STATE_NOPASS);
+        try {
+            this.contentMapper.updateById(id,content);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public void push(String id, String date) throws MinerException {
+        Content content = new Content();
+        content.setPushdate(date);
+        try {
+            this.contentMapper.updateById(id,content);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
         }
     }
 }

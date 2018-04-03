@@ -22,6 +22,7 @@ public class Content {
     public static final Integer STATE_INVALID = 2;
     public static final Integer STATE_NOPASS = 3;
     public static final Integer STATE_PASS = 4;
+    public static final Integer STATE_PUSHED = 5;
     public static final Integer STATE_DEL = 9;
 
     private Integer id;
@@ -30,9 +31,11 @@ public class Content {
     private String site;
     private String url;
     private String title;
+    private String description;
     private String comment;
     private String pubdate;
     private String getdate;
+    private String pushdate;
     private String topic;
     private List<String> topics;
     private Integer state;

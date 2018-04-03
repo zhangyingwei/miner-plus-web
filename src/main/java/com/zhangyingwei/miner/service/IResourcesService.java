@@ -16,5 +16,11 @@ public interface IResourcesService {
 
     List<Resources> listResourcesWithPageAndFlag(PageInfo pageInfo, Integer flag) throws MinerException;
 
+    List<Resources> listResourcesWithPage(PageInfo pageInfo) throws MinerException;
+
     void removeResourcesByState(String id) throws MinerException;
+
+    void badResources(String id) throws MinerException;
+
+    void goodResources(String id) throws MinerException;
 }
