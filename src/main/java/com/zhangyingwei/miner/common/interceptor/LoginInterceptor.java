@@ -43,8 +43,8 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
         if (StringUtils.isEmpty(token)) {
             token = request.getParameter("miner-token");
         }
-        logger.info(oldToken+"");
-        logger.info(token+"");
+//        logger.info(oldToken+"");
+//        logger.info(token+"");
 
         if (null != oldToken && oldToken.equals(token)) {
 //            logger.info("已经登录过了");

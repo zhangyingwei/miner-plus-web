@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by zhangyw on 2017/8/14.
@@ -32,12 +33,16 @@ public class SubscribeService implements ISubscribeService{
                 emailQueue.push(subscribe.getEmail());
                 logger.info(subscribe.getEmail() + "已经入队");
             }else {
-                if (old.getFlag() == Subscribe.FLAG_INIT) {
-                    throw new MinerException("您已经订阅过啦！");
+                if (old.getFlag() >= Subscribe.FLAG_CKECKED) {
+                    subscribe.setFlag(Subscribe.FLAG_CKECKED);
+                    this.subscribeMapper.updateByEmail(subscribe);
+                    throw new MinerException("您是老用户，已经修改订阅主题");
                 } else {
                     subscribe.setFlag(Subscribe.FLAG_NOTICE);
                     this.subscribeMapper.updateByEmail(subscribe);
                     emailQueue.push(old.getEmail());
+                    logger.info(subscribe.getEmail() + "已经入队");
+                    throw new MinerException("订阅成功，请登录邮箱进行验证！！！");
                 }
             }
         } catch (Exception e) {

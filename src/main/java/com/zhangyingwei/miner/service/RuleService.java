@@ -34,11 +34,14 @@ public class RuleService {
     }
 
     @Transactional
-    public void addRules(String uuid, ResRule title, ResRule url, ResRule desc, ResRule pubdate) throws Exception {
+    public void addRules(String uuid, ResRule title, String type, ResRule url, ResRule desc, ResRule pubdate) throws Exception {
         this.ruleMapper.addOne(title);
         this.ruleMapper.addOne(url);
         this.ruleMapper.addOne(desc);
         this.ruleMapper.addOne(pubdate);
-        this.resourcesMapper.updateStateById(uuid, Resources.FLAG_NOMAL);
+        Resources resources = new Resources();
+        resources.setFlag(Resources.FLAG_NOMAL);
+        resources.setRgroup(type);
+        this.resourcesMapper.updateResourcesById(uuid, resources);
     }
 }

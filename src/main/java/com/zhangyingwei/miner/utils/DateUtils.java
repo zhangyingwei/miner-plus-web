@@ -15,10 +15,14 @@ import java.util.Date;
 public class DateUtils {
 
     public static String formateDatetimeAsDate(String datetime) throws ParseException {
-        SimpleDateFormat formate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        Date date = formate.parse(datetime);
-        SimpleDateFormat toformate = new SimpleDateFormat("yyyy-MM-dd");
-        return toformate.format(date);
+        try {
+            SimpleDateFormat formate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            Date date = formate.parse(datetime);
+            SimpleDateFormat toformate = new SimpleDateFormat("yyyy-MM-dd");
+            return toformate.format(date);
+        } catch (Exception e) {
+            return datetime;
+        }
     }
 
     public static String getCurrentDateTime(){

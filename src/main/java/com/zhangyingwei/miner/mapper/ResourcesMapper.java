@@ -31,7 +31,23 @@ public interface ResourcesMapper {
     @Update("update mp_resources set flag=#{flag} where id=#{id}")
     void updateStateById(@Param("id") String id,@Param("flag") Integer flag) throws Exception;
 
+    @UpdateProvider(type = ResourcesProvider.class,method = "updateResourcesByIdSql")
+    void updateResourcesById(@Param("id") String id,@Param("res") Resources resources) throws Exception;
+
     class ResourcesProvider {
+        public String updateResourcesByIdSql(@Param("id") String id,@Param("res") Resources resources) {
+            StringBuffer sql = new StringBuffer("update mp_resources set");
+            if (StringUtils.isNotBlank(resources.getRgroup())) {
+                sql.append(" rgroup=#{res.rgroup},");
+            }
+            if (null != resources.getFlag()) {
+                sql.append(" flag=#{res.flag},");
+            }
+            sql.delete(sql.length() - 1, sql.length());
+            sql.append(" where id=#{id}");
+            return sql.toString();
+        }
+
         public String listResourcesWithPageAndParam(@Param("page") PageInfo pageInfo,@Param("res") Resources resources) {
             StringBuffer sql = new StringBuffer("select * from mp_resources where 1=1 and");
             if (null != resources.getFlag()) {

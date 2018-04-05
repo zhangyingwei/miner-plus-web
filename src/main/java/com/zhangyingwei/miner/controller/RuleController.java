@@ -33,13 +33,13 @@ public class RuleController {
 
     @PostMapping
     @ResponseBody
-    public Map addRules(String uuid,String id,@RequestParam Map params) throws MinerException {
+    public Map addRules(String uuid,String id,String type,@RequestParam Map params) throws MinerException {
         ResRule title = this.bulidModel(params,id,"title");
         ResRule url = this.bulidModel(params,id,"url");
         ResRule desc = this.bulidModel(params,id,"desc");
         ResRule pubdate = this.bulidModel(params,id,"pubdate");
         try {
-            this.ruleService.addRules(uuid,title, url, desc, pubdate);
+            this.ruleService.addRules(uuid,title,type,url, desc, pubdate);
         } catch (Exception e) {
             throw new MinerException(e.getLocalizedMessage());
         }

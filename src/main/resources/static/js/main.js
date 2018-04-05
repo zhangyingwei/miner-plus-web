@@ -17,10 +17,10 @@ $(function () {
         const ele = $(this);
         if(ele.hasClass("outline")){
             ele.removeClass("outline");
-            topic.push(ele.text());
+            topic.push(ele.find("span").attr("topic-id"));
         }else{
             ele.addClass("outline");
-            topic.remove(ele.text());
+            topic.remove(ele.find("span").attr("topic-id"));
         }
     });
 

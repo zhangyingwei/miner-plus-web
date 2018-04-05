@@ -13,6 +13,9 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,11 @@ public class WebUtils {
     private static OkHttpClient client;
 
     static {
+        try {
+            SslUtils.ignoreSsl();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         client = new OkHttpClient().newBuilder().build();
     }
     public static List<String> select(String url, ResRule rule) throws MinerException {
