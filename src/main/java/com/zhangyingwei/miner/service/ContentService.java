@@ -3,11 +3,14 @@ package com.zhangyingwei.miner.service;
 import com.zhangyingwei.miner.controller.result.PageInfo;
 import com.zhangyingwei.miner.exception.MinerException;
 import com.zhangyingwei.miner.mapper.ContentMapper;
+import com.zhangyingwei.miner.mapper.ContentTopicMapper;
 import com.zhangyingwei.miner.model.Content;
+import com.zhangyingwei.miner.model.PushCount;
 import com.zhangyingwei.miner.model.Topic;
 import com.zhangyingwei.miner.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +22,8 @@ public class ContentService implements IContentService {
 
     @Autowired
     private ContentMapper contentMapper;
+    @Autowired
+    private ContentTopicMapper contentTopicMapper;
 
     @Override
     public List<Content> listContentsWithPageAndParram(PageInfo pageInfo, Content content) throws MinerException {
@@ -89,13 +94,14 @@ public class ContentService implements IContentService {
     }
 
     @Override
-    public void readyToPush(String id, String comment) throws MinerException {
+    public void readyToPush(String id, String comment,Integer select) throws MinerException {
         Content content = new Content();
         content.setState(Content.STATE_PASS);
         content.setComment(comment);
 //        content.setPushdate(DateUtils.getNextDate());
         try {
             this.contentMapper.updateById(id,content);
+            this.contentTopicMapper.addContentTopic(Integer.parseInt(id), select);
         } catch (Exception e) {
             throw new MinerException(e.getLocalizedMessage());
         }
@@ -118,6 +124,26 @@ public class ContentService implements IContentService {
         content.setPushdate(date);
         try {
             this.contentMapper.updateById(id,content);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public Integer getYesterdayNew() throws MinerException{
+        Content content = new Content();
+        content.setGetdate(DateUtils.getDateAfter(0 * 60 * 60 * 24)+"%");
+        try {
+            return this.contentMapper.getCountByParam(content);
+        } catch (Exception e) {
+            throw new MinerException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public List<PushCount> listPushCountAfterNow() throws MinerException {
+        try {
+            return this.contentMapper.listPushCountAfter(DateUtils.getCurrentDate());
         } catch (Exception e) {
             throw new MinerException(e.getLocalizedMessage());
         }

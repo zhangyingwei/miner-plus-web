@@ -96,4 +96,16 @@ public class ResourcesService implements IResourcesService {
             throw new MinerException(e.getLocalizedMessage());
         }
     }
+
+    @Override
+    public void updateResources(String id,String resources, String rgroup) {
+        try {
+            Resources params = new Resources();
+            params.setResources(resources);
+            params.setRgroup(rgroup);
+            this.resourcesMapper.updateResourcesById(id, params);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

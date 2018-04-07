@@ -23,4 +23,6 @@ public interface IResourcesService {
     void badResources(String id) throws MinerException;
 
     void goodResources(String id) throws MinerException;
+
+    void updateResources(String id,String resources, String rgroup);
 }

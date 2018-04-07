@@ -2,6 +2,7 @@ package com.zhangyingwei.miner.mapper;
 
 import com.zhangyingwei.miner.controller.result.PageInfo;
 import com.zhangyingwei.miner.model.Content;
+import com.zhangyingwei.miner.model.PushCount;
 import com.zhangyingwei.miner.model.Topic;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.*;
@@ -38,6 +39,11 @@ public interface ContentMapper {
     @UpdateProvider(type = ContentMapperProvider.class ,method = "updateById")
     void updateById(@Param("id") String id, @Param("content") Content content) throws Exception;
 
+    @SelectProvider(type = ContentMapperProvider.class,method = "count")
+    Integer getCountByParam(@Param("content")Content content) throws Exception;
+
+    @Select("select pushdate,count(1) as count from mp_content where state=4 and pushdate >=#{nowdate} or pushdate is null group by pushdate")
+    List<PushCount> listPushCountAfter(@Param("nowdate")String nowdate) throws Exception;
 
     class ContentMapperProvider {
         public String listContentsWithPageAndParamSql(@Param("page") PageInfo pageInfo, @Param("content") Content content){
@@ -45,8 +51,23 @@ public interface ContentMapper {
             if (null != content.getState()) {
                 sql.append(" state=#{content.state} and");
             }
+            if (StringUtils.isNotEmpty(content.getPushdate())) {
+                sql.append(" (pushdate is null or pushdate >= #{content.pushdate}) and");
+            }
             sql.delete(sql.length() - 3, sql.length());
-            sql.append(" order by pushdate,id limit #{page.start},#{page.pageSize}");
+            sql.append(" order by pushdate,id desc limit #{page.start},#{page.pageSize}");
+            return sql.toString();
+        }
+
+        public String count(@Param("content") Content content){
+            StringBuffer sql = new StringBuffer("select count(*) from mp_content where 1=1 and");
+            if (null != content.getState()) {
+                sql.append(" state=#{content.state} and");
+            }
+            if (StringUtils.isNotEmpty(content.getGetdate())) {
+                sql.append(" getdate like #{content.getdate} and");
+            }
+            sql.delete(sql.length() - 3, sql.length());
             return sql.toString();
         }
 
@@ -54,6 +75,9 @@ public interface ContentMapper {
             StringBuffer sql = new StringBuffer("select count(*) from mp_content where 1=1 and");
             if (null != content.getState()) {
                 sql.append(" state=#{content.state} and");
+            }
+            if (StringUtils.isNotEmpty(content.getPushdate())) {
+                sql.append(" (pushdate is null or pushdate >= #{content.pushdate}) and");
             }
             sql.delete(sql.length() - 3, sql.length());
             return sql.toString();

@@ -40,6 +40,9 @@ public interface ResourcesMapper {
             if (StringUtils.isNotBlank(resources.getRgroup())) {
                 sql.append(" rgroup=#{res.rgroup},");
             }
+            if (StringUtils.isNotBlank(resources.getResources())) {
+                sql.append(" resources=#{res.resources},");
+            }
             if (null != resources.getFlag()) {
                 sql.append(" flag=#{res.flag},");
             }

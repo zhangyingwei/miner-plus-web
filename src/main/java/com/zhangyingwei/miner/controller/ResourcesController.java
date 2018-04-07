@@ -92,4 +92,11 @@ public class ResourcesController {
         this.resourcesService.goodResources(id);
         return Result.success();
     }
+
+    @PostMapping("/api/resources/update/{id}")
+    @ResponseBody
+    public Map updateResources(@PathVariable("id") String id,String resources, String rgroup) throws MinerException {
+        this.resourcesService.updateResources(id,resources, rgroup);
+        return Result.success();
+    }
 }

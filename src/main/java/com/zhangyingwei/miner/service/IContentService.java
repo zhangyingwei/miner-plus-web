@@ -3,6 +3,7 @@ package com.zhangyingwei.miner.service;
 import com.zhangyingwei.miner.controller.result.PageInfo;
 import com.zhangyingwei.miner.exception.MinerException;
 import com.zhangyingwei.miner.model.Content;
+import com.zhangyingwei.miner.model.PushCount;
 import com.zhangyingwei.miner.model.Topic;
 
 import java.util.List;
@@ -17,10 +18,14 @@ public interface IContentService {
     List<Content> listNomalContentsToDay() throws MinerException;
     List<Content> listNomalContentsToDayTop10() throws MinerException;
     List<Topic> listTopics() throws MinerException;
-    void readyToPush(String id, String comment) throws MinerException;
+    void readyToPush(String id, String comment,Integer select) throws MinerException;
 
     void isRubbis(String id) throws MinerException;
 
     void push(String id, String date) throws MinerException;
+
+    Integer getYesterdayNew() throws MinerException;
+
+    List<PushCount> listPushCountAfterNow() throws MinerException;
 }
 

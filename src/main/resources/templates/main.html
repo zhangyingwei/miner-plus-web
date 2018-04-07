@@ -28,7 +28,7 @@
                             <div class="item">
                                 <label class="item-title"><a target="_blank" href="#" th:href="@{${content.url}}" th:text="${content.title}">从零构建 TCP/IP 协议</a></label>
                                 <div th:if="${content.comment != null && content.comment.trim().length() != 0}" class="comment" >
-                                    <label class="title">简评:&nbsp;</label>
+                                    <label class="title" style="float: left;">简评:&nbsp;</label>
                                     <p th:text="${content.comment}">
                                         这里是一些简评，主要是如果我看到文章有些意思的话，会写一些自己的见解，无关乎对错，无关乎立场
                                     </p>
