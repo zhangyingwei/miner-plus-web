@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:wb="http://open.weibo.com/wb">
 <head>
     <meta charset="UTF-8">
     <title>Miner - 首页</title>
@@ -10,6 +10,7 @@
     <script type="application/javascript" src="dist/layer/layer.js"></script>
     <script type="application/javascript" src="dist/is/is.js"></script>
     <script type="application/javascript" src="js/main.js"></script>
+    <script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
 <div class="miner-main-container ">
@@ -46,17 +47,25 @@
                     <div class="text-center">
                         <h5>作个自我介绍吧</h5>
                     </div>
-                    <div class="container">
+                    <div class="container description">
                         <p>
-                            一个内容订阅服务，<red><strong>给自己用的</strong></red>，如果你想用我也<red>不会拒绝</red>。主要内容包含 java、scala、python、前端等一系列我感兴趣的东西。如果暂时没收录到你的<red>G点</red>，你可以提需求嘛。
+                            一个内容订阅服务，<red><strong>给自己用的</strong></red>，如果你想用我也<red>不会拒绝</red>。主要内容包含 java、scala、python、机器学习、大数据、安全、前端等一系列我感兴趣的东西。如果暂时没收录到你的<red>关注点</red>，来来咱俩交流交流感情。
+                        </p>
                         <p>
+                            ps: 每天限定10篇，不保证一定有价值，不保证每个主题都涉及到
+                        </p>
+                        <p class="label">
+                            查看 <a href="http://blog.zhangyingwei.com/articles/cf1a230f-35ff-4065-8df0-be1512b9e9b5" target="_blank">Miner 的前世今生</a>
+                        </p>
                     </div>
                     <div class="box container">
-                        <span>邮箱: <a href="mailto:zhangyw001.miner@gmail.com" class="label">zhangyw001.miner@gmail.com</a></a>
+                        <span>邮箱: <a href="mailto:zhangyw001+miner@gmail.com" class="label">zhangyw001+miner@gmail.com</a></a>
                         <br>
-                            <span>微信: <a href="#" class="label"><del>犹豫要不要公布</del></a></span>
+                            <span>微信: <a href="#" class="label">fengche361</a></span>
                         <br>
-                        <span>微博: <a class="label" href="http://weibo.com/zyw8866">专业喝咖啡</a></span>
+                        <span>微博:
+                            <a class="label" href="http://weibo.com/zyw8866">专业喝咖啡</a>
+                        </span>
                     </div>
                     <div class="container">
                         <nav class="tabs" data-component="tabs" data-equals="true">
@@ -95,6 +104,9 @@
         <footer>
             <section>Miner © 2017-08-13</section>
             <section>Powered by <a href="http://zhangyingwei.com">zhangyw</a></section>
+            <div>
+                <wb:share-button appkey="838378432" addition="simple" type="button" ralateUid="1750783647" picture_search="false" language="zh_cn"></wb:share-button>
+            </div>
         </footer>
     </div>
 </div>
