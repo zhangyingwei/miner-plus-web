@@ -42,7 +42,7 @@ public interface ContentMapper {
     @SelectProvider(type = ContentMapperProvider.class,method = "count")
     Integer getCountByParam(@Param("content")Content content) throws Exception;
 
-    @Select("select pushdate,count(1) as count from mp_content where state=4 and pushdate >=#{nowdate} or pushdate is null group by pushdate")
+    @Select("select pushdate,count(1) as count from mp_content where state=4 and (pushdate >=#{nowdate} or pushdate is null) group by pushdate")
     List<PushCount> listPushCountAfter(@Param("nowdate")String nowdate) throws Exception;
 
     class ContentMapperProvider {
