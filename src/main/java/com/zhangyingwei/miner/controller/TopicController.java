@@ -1,5 +1,6 @@
 package com.zhangyingwei.miner.controller;
 
+import com.zhangyingwei.miner.common.Auth;
 import com.zhangyingwei.miner.controller.result.PageInfo;
 import com.zhangyingwei.miner.controller.result.Result;
 import com.zhangyingwei.miner.exception.MinerException;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/topics")
+@Auth
 public class TopicController {
 
     @Autowired

@@ -1,6 +1,7 @@
 package com.zhangyingwei.miner.controller;
 
 import com.zhangyingwei.miner.common.Auth;
+import com.zhangyingwei.miner.common.ipip.IP;
 import com.zhangyingwei.miner.controller.result.PageInfo;
 import com.zhangyingwei.miner.controller.result.Result;
 import com.zhangyingwei.miner.exception.MinerException;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +79,13 @@ public class ResourcesController {
         return Result.success();
     }
 
+//    @DeleteMapping("/api/resources/real/{id}")
+//    @ResponseBody
+//    public Map deleteResources(@PathVariable("id") String id) throws MinerException {
+//        this.resourcesService.deleteResourcesById(id);
+//        return Result.success();
+//    }
+
     @Auth
     @PostMapping("/api/resources/bad/{id}")
     @ResponseBody
@@ -95,6 +104,7 @@ public class ResourcesController {
 
     @PostMapping("/api/resources/update/{id}")
     @ResponseBody
+    @Auth
     public Map updateResources(@PathVariable("id") String id,String resources, String rgroup) throws MinerException {
         this.resourcesService.updateResources(id,resources, rgroup);
         return Result.success();

@@ -22,7 +22,7 @@ public interface ResourcesMapper {
     @SelectProvider(type = ResourcesProvider.class,method = "total")
     Integer total(@Param("page") PageInfo pageInfo,@Param("res") Resources resources);
 
-    @Insert("insert into mp_resources (resources,rtype,createdate,updatedate,flag,sip) values (#{res.resources},#{res.rtype},#{res.createdate},#{res.updatedate},#{res.flag},#{res.sip})")
+    @Insert("insert into mp_resources (resources,rtype,createdate,updatedate,flag,sip,sarea) values (#{res.resources},#{res.rtype},#{res.createdate},#{res.updatedate},#{res.flag},#{res.sip},#{res.sarea})")
     void addResources(@Param("res") Resources resources) throws Exception;
 
     @Select("select * from mp_resources where resources=#{resources}")
@@ -33,6 +33,9 @@ public interface ResourcesMapper {
 
     @UpdateProvider(type = ResourcesProvider.class,method = "updateResourcesByIdSql")
     void updateResourcesById(@Param("id") String id,@Param("res") Resources resources) throws Exception;
+
+    @Delete("delete from mp_resources where id=#{id}")
+    void deleteById(@Param("id") String id) throws Exception;
 
     class ResourcesProvider {
         public String updateResourcesByIdSql(@Param("id") String id,@Param("res") Resources resources) {

@@ -27,8 +27,15 @@ public interface TopicMapper {
     @Select("select * from mp_topics where topic=#{topic}")
     Topic selectOne(@Param("topic") String topic) throws Exception;
 
+    @Select("select contentid from mp_content_topic where topicid=#{topicid}")
+    List<String> selectUsed(@Param("topicid") String topicid) throws Exception;
+
+
     @UpdateProvider(type = TopicMapperProvider.class,method = "updateByNameSql")
     void updateByName(@Param("t") String topic, @Param("param") Topic param) throws Exception;
+
+    @Delete("delete from mp_topics where topic=#{topic}")
+    void deleteTopic(String topic);
 
     class TopicMapperProvider {
         public String updateByNameSql(@Param("t") String topic, @Param("param") Topic param) {

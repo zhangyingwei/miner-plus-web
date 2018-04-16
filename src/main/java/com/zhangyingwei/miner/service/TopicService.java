@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -69,7 +70,15 @@ public class TopicService implements ITopicService {
         Topic t = new Topic();
         t.setFlag(Topic.FLAG_DEL);
         try {
-            this.topicMapper.updateByName(topic,t);
+            Topic old = this.topicMapper.selectOne(topic);
+            List<String> contentids = this.topicMapper.selectUsed(old.getId() + "");
+            if (null == contentids || contentids.size() == 0) {
+                this.topicMapper.deleteTopic(topic);
+            } else {
+                this.topicMapper.updateByName(topic,t);
+                logger.info(topic + " is used by contents:" + contentids + " so disabled but not delete");
+                throw new MinerException(topic + " is used by contents:" + contentids + " so disabled but not delete");
+            }
         } catch (Exception e) {
             throw new MinerException(e.getLocalizedMessage());
         }
