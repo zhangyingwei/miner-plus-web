@@ -115,6 +115,12 @@
             <version>2.4</version>
             <classifier>jdk15</classifier>
         </dependency>
+		<!-- https://mvnrepository.com/artifact/com.rometools/rome -->
+		<dependency>
+			<groupId>com.rometools</groupId>
+			<artifactId>rome</artifactId>
+			<version>1.7.3</version>
+		</dependency>
 	</dependencies>
 
 	<profiles>

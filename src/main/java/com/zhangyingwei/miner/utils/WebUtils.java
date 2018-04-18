@@ -1,7 +1,11 @@
 package com.zhangyingwei.miner.utils;
 
+import com.rometools.rome.feed.synd.*;
+import com.rometools.rome.io.FeedException;
+import com.rometools.rome.io.SyndFeedOutput;
 import com.zhangyingwei.miner.common.MinerEnum;
 import com.zhangyingwei.miner.exception.MinerException;
+import com.zhangyingwei.miner.model.Content;
 import com.zhangyingwei.miner.model.ResRule;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -19,6 +23,7 @@ import javax.net.ssl.SSLSession;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -98,5 +103,34 @@ public class WebUtils {
             ip = request.getRemoteAddr();
         }
         return ip;
+    }
+
+    public static String bulidRss(List<Content> contents) throws FeedException {
+        SyndFeed feed = new SyndFeedImpl();
+        feed.setEncoding("utf-8");
+        feed.setAuthor("张英伟");
+        feed.setDescription("一个内容订阅服务，给自己用的，如果你想用我也不会拒绝。主要内容包含 java、scala、python、机器学习、大数据、安全、前端等一系列我感兴趣的东西。如果暂时没收录到你的关注点，来来咱俩交流交流感情。");
+        feed.setTitle("Miner 也许是国内外第二烂的内容订阅服务");
+        feed.setLink("http://miner.zhangyingwei.com/");
+        feed.setFeedType("rss_2.0");
+        List<SyndEntry> entires = contents.stream().map(content -> {
+            SyndEntry entry = new SyndEntryImpl();
+            entry.setTitle(content.getTitle());
+            entry.setLink(content.getUrl());
+            entry.setAuthor("张英伟");
+            SyndContent scontent = new SyndContentImpl();
+            scontent.setValue(Optional.ofNullable(content.getComment()).orElse(""));
+            entry.setDescription(scontent);
+            entry.setCategories(content.getTopics().stream().map(t -> {
+                SyndCategory category = new SyndCategoryImpl();
+                category.setName(t);
+                return category;
+            }).collect(Collectors.toList()));
+            return entry;
+        }).collect(Collectors.toList());
+        feed.setEntries(entires);
+
+        SyndFeedOutput output = new SyndFeedOutput();
+        return output.outputString(feed);
     }
 }

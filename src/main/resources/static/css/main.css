@@ -87,3 +87,11 @@ red {
     font-size:15px;
     font-family: '微软雅黑';
 }
+
+.rss-labels{
+    margin-top: 20px;
+}
+
+.rssbutton{
+    font-size: 10px;
+}
