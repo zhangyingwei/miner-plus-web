@@ -16,7 +16,7 @@ public interface IContentService {
     List<Content> listContentsToDay() throws MinerException;
     List<Content> listContentsToDayTop10() throws MinerException;
     List<Content> listNomalContentsToDay() throws MinerException;
-    List<Content> listNomalContentsToDayTop10() throws MinerException;
+    List<Content> listNomalContentsToDayTop10(String data) throws MinerException;
     List<Topic> listTopics() throws MinerException;
     void readyToPush(String id, String comment,Integer select) throws MinerException;
 

@@ -10,7 +10,6 @@ import com.zhangyingwei.miner.model.Topic;
 import com.zhangyingwei.miner.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -69,8 +68,8 @@ public class ContentService implements IContentService {
     }
 
     @Override
-    public List<Content> listNomalContentsToDayTop10() throws MinerException {
-        String toDay = DateUtils.getCurrentDate();
+    public List<Content> listNomalContentsToDayTop10(String data) throws MinerException {
+        String toDay = data;
         toDay += "%";
         try {
             List<Content> contents = this.contentMapper.listContentsByPushDateAndStateLimit(toDay, 10, Content.STATE_PASS);
